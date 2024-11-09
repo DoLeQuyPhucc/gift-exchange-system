@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       "m.media-amazon.com",
       "i5.walmartimages.com",
       "encrypted-tbn0.gstatic.com",
+      "simg.zalopay.com.vn",
+      "firebasestorage.googleapis.com"
     ],
   },
 };
