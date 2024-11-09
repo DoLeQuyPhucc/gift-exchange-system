@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Search, Bell, ShoppingCart } from 'lucide-react'
+import { Search, Bell, ShoppingCart, PlusCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,15 +24,17 @@ export default function Navbar() {
           <div className="hidden md:flex flex-1 max-w-md mx-4">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <Input
-                placeholder="Tìm kiếm sản phẩm..."
-                className="pl-10 w-full bg-gray-50"
-              />
+              <Input placeholder="Tìm kiếm sản phẩm..." className="pl-10 w-full bg-gray-50" />
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <Link href="/create-post">
+              <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full">
+                <PlusCircle size={20} />
+              </Button>
+            </Link>
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <Bell size={20} />
             </button>
