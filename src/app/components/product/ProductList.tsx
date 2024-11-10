@@ -20,8 +20,12 @@ export default function ProductsList({ searchText }: { searchText: string }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('https://672f062d229a881691f19ad9.mockapi.io/api/items')
-        setProducts(response.data)
+        const response = await axios.get('https://67302fa666e42ceaf15f9caf.mockapi.io/items')
+        const productsData = response.data.find((item: any) => item.resource === 'products')
+        
+        if (productsData) {
+          setProducts(productsData.data)
+        }
       } catch (error) {
         console.error('Error fetching products:', error)
       } finally {
