@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Search, Bell, ShoppingCart, PlusCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +11,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   console.log(searchTerm);
+
+  const login = async () => {
+
+    const userId = "1";
+    localStorage.setItem("userId", userId);
+    toast.success("Đăng nhập thành công");
+  };
+
+  const logout = async () => {
+      localStorage.removeItem("userId");
+      toast.success("Đăng xuất thành công");
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-orange-200 border-bz-10 shadow-md">
       <div className="container mx-auto w-4/5 py-2">
@@ -44,6 +57,9 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <button className="p-2 hover:bg-gray-100 rounded-full" onClick={login}>
+              Login
+            </button>
             <Link href="/create-post" className="p-2 hover:bg-gray-100 rounded-full">
               <PlusCircle size={20} />
             </Link>
@@ -89,6 +105,7 @@ export default function Navbar() {
                   <Link
                     href="#"
                     className="p-2 hover:bg-gray-100 rounded-full"
+                    onClick={logout}
                   >
                     Đăng xuất
                   </Link>

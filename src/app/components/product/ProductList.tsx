@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Product } from '@/app/types/product'
 
 export default function ProductsList({ searchText }: { searchText: string }) {
+  const userId = localStorage.getItem('userId')
+
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState(searchText)
@@ -30,7 +32,7 @@ export default function ProductsList({ searchText }: { searchText: string }) {
     }
 
     fetchProducts()
-  }, [])
+  }, [userId])
 
   useEffect(() => {
     setSearchTerm(searchText)
@@ -39,6 +41,7 @@ export default function ProductsList({ searchText }: { searchText: string }) {
   const categories = [...new Set(products.map(product => product.category))]
 
   const filteredProducts = products
+    .filter(product => product.owner_id !== userId)
     .filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase())
