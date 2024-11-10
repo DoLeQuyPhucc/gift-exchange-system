@@ -7,10 +7,10 @@ import { Toaster } from 'react-hot-toast'
 import Footer from './components/layout/Footer'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import LoadingSpinner from './components/spinner-loading/spinnerLoading'
 
 const inter = Inter({ subsets: ['latin'] })
 
-// Danh sách các route không cần auth
 const publicRoutes = ['/auth', '/']
 
 export default function RootLayout({
@@ -23,34 +23,28 @@ export default function RootLayout({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
   useEffect(() => {
-    // Kiểm tra auth status
     const userId = localStorage.getItem('userId')
     setIsAuthenticated(!!userId)
 
-    // Xử lý routing
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
     
     if (!userId && !isPublicRoute) {
       router.push('/auth')
     } else if (userId && pathname === '/auth') {
-      router.push('/') // Redirect về home nếu đã login mà vào trang auth
+      router.push('/')
     }
   }, [pathname, router])
 
-  // Loading state
   if (isAuthenticated === null) {
     return (
       <html lang="vi">
         <body className={inter.className}>
-          <div className="min-h-screen flex items-center justify-center">
-            Loading...
-          </div>
+           <LoadingSpinner width = '12' height = '12' color = 'orange-500' />
         </body>
       </html>
     )
   }
 
-  // Layout cho trang auth
   if (!isAuthenticated && pathname.startsWith('/auth')) {
     return (
       <html lang="vi">
@@ -72,7 +66,7 @@ export default function RootLayout({
             {children}
           </div>
         </main>
-        {/* <Footer /> */}
+        <Footer />
         <Toaster />
       </body>
     </html>
