@@ -1,48 +1,51 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import Image from 'next/image'
-import { useParams } from 'next/navigation'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Calendar, Package, RefreshCcw } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Package, RefreshCcw } from "lucide-react";
+import toast from "react-hot-toast";
+import { formatDate } from "@/app/utils/format-date";
 
 interface Product {
-  id: string
-  name: string
-  description: string
-  category: string
-  condition: string
-  image: string
-  available: boolean
-  created_at: string
-  quantity: number
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  condition: string;
+  image: string;
+  available: boolean;
+  created_at: string;
+  quantity: number;
 }
 
 export default function ProductDetailPage() {
-  const params = useParams()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+  const params = useParams();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`https://672f062d229a881691f19ad9.mockapi.io/api/items/${params.id}`)
-        setProduct(response.data)
+        const response = await axios.get(
+          `https://672f062d229a881691f19ad9.mockapi.io/api/items/${params.id}`
+        );
+        setProduct(response.data);
       } catch (error) {
-        console.error('Error fetching product:', error)
-        toast.error('Không thể tải thông tin sản phẩm')
+        console.error("Error fetching product:", error);
+        toast.error("Không thể tải thông tin sản phẩm");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (params.id) {
-      fetchProduct()
+      fetchProduct();
     }
-  }, [params.id])
+  }, [params.id]);
 
   if (loading) {
     return (
@@ -54,22 +57,25 @@ export default function ProductDetailPage() {
           <div className="h-4 bg-gray-200 w-2/3" />
         </div>
       </div>
-    )
+    );
   }
 
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800">Không tìm thấy sản phẩm</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Không tìm thấy sản phẩm
+          </h1>
         </div>
       </div>
-    )
+    );
   }
 
-  const handleAddToCart = () => {
-    toast.success('Đã thêm vào giỏ hàng')
-  }
+  const handleAddToCart = async () => {
+
+    toast.success("Đã thêm vào giỏ hàng");
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -86,8 +92,10 @@ export default function ProductDetailPage() {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
-          
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">
+            {product.name}
+          </h1>
+
           <div className="flex gap-2 mb-6">
             <Badge className="bg-orange-500">{product.category}</Badge>
             <Badge variant="outline">{product.condition}</Badge>
@@ -103,7 +111,10 @@ export default function ProductDetailPage() {
           <div className="space-y-4 mb-8">
             <div className="flex items-center gap-2 text-gray-600">
               <Calendar size={20} />
-              <span>Ngày đăng: {new Date(product.created_at).toLocaleDateString('vi-VN')}</span>
+              <span>
+                Ngày đăng:{" "}
+                {formatDate(product.created_at)}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <Package size={20} />
@@ -114,17 +125,40 @@ export default function ProductDetailPage() {
               <span>Tình trạng: {product.condition}</span>
             </div>
           </div>
+          {product.available ? (
 
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <Button className="w-1/2 bg-orange-500 hover:bg-orange-600 text-white">
+                Liên hệ
+              </Button>
+              <Button 
+                className="w-1/2 bg-amber-500 hover:bg-amber-600 text-white" 
+                onClick={handleAddToCart}
+              >
+                Thêm vào giỏ hàng
+              </Button>
+            </div>
+
+            <Button
+              size="lg"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={handleAddToCart}
+            >
+              Yêu cầu trao đổi
+            </Button>
+          </div>
+          ) : (
           <Button
-            size="lg"
-            className="w-full bg-orange-500 hover:bg-orange-600"
-            onClick={handleAddToCart}
-            disabled={!product.available}
-          >
-            {product.available ? 'Thêm vào giỏ hàng' : 'Hết hàng'}
-          </Button>
+              size="lg"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              disabled
+            >
+              Hết hàng
+            </Button>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }
