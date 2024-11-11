@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, ChevronDown, Search } from "lucide-react"
 import * as Popover from '@radix-ui/react-popover'
-import { Category } from '@/app/types/category'
+import { Category } from '@/app/types/types'
 
 interface CategorySelectProps {
   onValueChange: (value: string) => void

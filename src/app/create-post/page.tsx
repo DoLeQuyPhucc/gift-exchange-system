@@ -1,10 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ImageUpload } from '../components/create-post/image-upload'
-import { ProductForm } from '../components/create-post/product-form'
-import { LocationDialog } from '../components/create-post/location-dialog'
-import { useCreatePost } from '../hooks/useCreatePost'
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ImageUpload } from '../components/create-post/image-upload';
+import { ProductForm } from '../components/create-post/product-form';
+import { LocationDialog } from '../components/create-post/location-dialog';
+import { useCreatePost } from '../hooks/useCreatePost';
+import toast from 'react-hot-toast';
+import axiosInstance from '../api/axiosInstance';
 
 export default function CreatePost() {
   const {
@@ -20,13 +23,49 @@ export default function CreatePost() {
     wards,
     isDialogOpen,
     setShowGuideTitle,
+    setIsLoading,
+    setFormData,
     setShowGuideContent,
     setIsDialogOpen,
-    handleImageChange,
-    handleSaveLocation,
     handleFormChange,
+    handleSaveLocation,
     handleSubmit
-  } = useCreatePost()
+  } = useCreatePost();
+
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+
+  const handleImageUpload = async (files: File[]) => {
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
+  
+      const response = await axiosInstance.post('file/cloudinary/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      if (response && response.data && response.data.isSuccess) {
+        setImageUrls(response.data.data);
+        setFormData((prev) => ({ ...prev, image: response.data.data }));
+        toast.success('Tải ảnh lên thành công');
+      } else {
+        toast.error('Tải ảnh lên thất bại');
+      }
+    } catch (error: any) {
+      if (error.response) {
+        console.error(`Error uploading images: ${error.response.status}`, error.response.data);
+      } else {
+        console.error('Error uploading images:', error);
+      }
+      toast.error('Tải ảnh lên thất bại');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -37,9 +76,9 @@ export default function CreatePost() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <ImageUpload 
-                image={formData.image}
-                onImageChange={handleImageChange}
+              <ImageUpload
+                imageUrls={imageUrls}
+                onImageUpload={handleImageUpload}
               />
             </div>
 
@@ -79,5 +118,5 @@ export default function CreatePost() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
