@@ -1,27 +1,30 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-// import axiosInstance from '../../api/axiosInstance';
 import React, { useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
+
+import { useAuth } from "../hooks/useAuthentication";
 
 interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
+  confirmedPassword?: string;
 }
 
 const AuthScreens: React.FC = () => {
+  // Auth states
   const [isSignIn, setIsSignIn] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const { login, register, loading } = useAuth();
 
   // Form states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmedPassword, setConfirmedPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const router = useRouter();
@@ -41,8 +44,14 @@ const AuthScreens: React.FC = () => {
 
     if (!password) {
       newErrors.password = "Password is required";
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (!isSignIn) {
+      if (!confirmedPassword) {
+        newErrors.confirmedPassword = "Confirm password is required";
+      } else if (password !== confirmedPassword) {
+        newErrors.confirmedPassword = "Passwords do not match";
+      }
     }
 
     setErrors(newErrors);
@@ -54,42 +63,23 @@ const AuthScreens: React.FC = () => {
 
     if (!validateForm()) return;
 
-    setLoading(true);
-    login(email);
-
-    setTimeout(() => {
-      setLoading(false);
-      // Reset form after successful submission
-      if (!isSignIn) {
-        setName("");
+    if (isSignIn) {
+      await login({ email, password });
+    } else {
+      const success = await register({ name, email, password, confirmedPassword });
+      if (success) {
+        setIsSignIn(true);
+        resetForm();
       }
-      setEmail("");
-      setPassword("");
-    }, 1500);
+    }
   };
 
-  const login = async (email: string) => {
-    try {
-      //   const response = await axios.post('/auth', { email });
-      //   console.log(response.data.user_id);
-      //   localStorage.setItem('userId', response.data.user_id);
-      //   localStorage.setItem('userRole', 'user');
-
-      setTimeout(() => {
-        setLoading(false);
-        // Reset form after successful submission
-        if (!isSignIn) {
-          setName("");
-        }
-        setEmail("");
-        setPassword("");
-        localStorage.setItem("userId", "1");
-        toast.success("Đăng nhập thành công!");
-        router.push("/");
-      }, 1500);
-    } catch (error) {
-      console.error(error);
-    }
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setConfirmedPassword("");
+    setErrors({});
   };
 
   return (
@@ -244,7 +234,7 @@ const AuthScreens: React.FC = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.573 3.021m-5.858.908a3 3 0 01-4.243-4.243"
                     />
                   </svg>
                 )}
@@ -255,53 +245,97 @@ const AuthScreens: React.FC = () => {
             )}
           </div>
 
-          {isSignIn && (
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-amber-500 border-gray-300 rounded focus:ring-amber-500"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+          {!isSignIn && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
               </label>
-              <a
-                href="#"
-                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
-              >
-                Forgot password?
-              </a>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmedPassword}
+                  onChange={(e) => setConfirmedPassword(e.target.value)}
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    errors.confirmedPassword
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-amber-500"
+                  } focus:border-transparent focus:ring-2 transition-colors pr-10`}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.573 3.021m-5.858.908a3 3 0 01-4.243-4.243"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.confirmedPassword && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.confirmedPassword}
+                </p>
+              )}
             </div>
           )}
 
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember"
+                type="checkbox"
+                className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="remember" className="ml-2 block text-sm text-gray-900">
+                Remember me
+              </label>
+            </div>
+            <a href="#" className="text-sm text-amber-600 hover:underline">
+              Forgot password?
+            </a>
+          </div>
+
           <button
             type="submit"
+            className="w-full bg-amber-600 text-white py-2 px-4 rounded-lg hover:bg-amber-700 transition-all duration-200 disabled:bg-amber-300 disabled:cursor-not-allowed"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-2 px-4 rounded-lg font-medium hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <svg className="w-5 h-5 mx-auto animate-spin" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            ) : isSignIn ? (
-              "Sign In"
-            ) : (
-              "Create Account"
-            )}
+            {loading ? "Loading..." : isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
       </div>

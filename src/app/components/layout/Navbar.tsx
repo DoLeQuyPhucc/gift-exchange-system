@@ -14,23 +14,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
+import { useAuth } from "@/app/hooks/useAuthentication";
+
 export default function Navbar() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const userId = localStorage.getItem("userId");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = localStorage.getItem("token");
+  const { logout } = useAuth();
 
   useEffect(() => {
-    // Check if the user is logged in by checking for userId in localStorage
-    setIsLoggedIn(!!userId);
-  }, [userId]);
+    // Check if the user is logged in by checking for token in localStorage
+    setIsLoggedIn(!!token);
+  }, [token]);
 
   const login = () => {
     router.push("/auth");
   };
 
-  const logout = () => {
-    localStorage.removeItem("userId");
+  const handleLogout = () => {
+    logout();
     setIsLoggedIn(false);
     toast.success("Đăng xuất thành công");
     router.push("/auth");
@@ -105,7 +108,7 @@ export default function Navbar() {
                     <DropdownMenuItem>
                       <button
                         className="p-2 hover:bg-gray-100 rounded-full"
-                        onClick={logout}
+                        onClick={handleLogout}
                       >
                         Đăng xuất
                       </button>
