@@ -1,28 +1,38 @@
-import { useRef } from 'react'
-import { Upload } from "lucide-react"
-import Image from 'next/image'
+import { useRef } from 'react';
+import { Upload } from "lucide-react";
+import Image from 'next/image';
 
 interface ImageUploadProps {
-  image: string
-  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  imageUrls: string[];
+  onImageUpload: (files: File[]) => void;
 }
 
-export const ImageUpload = ({ image, onImageChange }: ImageUploadProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export const ImageUpload = ({ imageUrls, onImageUpload }: ImageUploadProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      onImageUpload(Array.from(e.target.files));
+    }
+  };
 
   return (
-    <div 
+    <div
       className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer"
       onClick={() => fileInputRef.current?.click()}
     >
-      {image ? (
-        <div className="relative w-full aspect-square">
-          <Image
-            src={image}
-            alt="Preview"
-            fill
-            className="object-cover rounded-lg"
-          />
+      {imageUrls.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {imageUrls.map((url, index) => (
+            <div key={index} className="relative w-full aspect-square">
+              <Image
+                src={url}
+                alt={`Image ${index}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-64">
@@ -34,9 +44,10 @@ export const ImageUpload = ({ image, onImageChange }: ImageUploadProps) => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={onImageChange}
+        multiple
+        onChange={handleFileChange}
         className="hidden"
       />
     </div>
-  )
-}
+  );
+};

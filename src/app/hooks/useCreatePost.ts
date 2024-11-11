@@ -2,10 +2,25 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Category } from "@/app/types/category";
-import { CategoryAttribute } from "@/app/types/categoryAttribute";
-import { AttributeValue } from "@/app/types/attributeValue";
-import { FormData } from "@/app/types/form";
+import { Category } from "@/app/types/types";
+import { CategoryAttribute } from "@/app/types/types";
+import { AttributeValue } from "@/app/types/types";
+export interface FormData {
+  [key: string]: any;
+  name: string;
+  description: string;
+  category: string;
+  condition: string;
+  image: string;
+  quantity: string;
+  available: boolean;
+  attributes: Record<string, any>;
+  province: string;
+  district: string;
+  ward: string;
+  specificAddress: string;
+  address: string;
+}
 
 export const useCreatePost = () => {
   const router = useRouter();
@@ -211,6 +226,8 @@ export const useCreatePost = () => {
     wards,
     isDialogOpen,
     setShowGuideTitle,
+    setIsLoading,
+    setFormData,
     setShowGuideContent,
     setIsDialogOpen,
     handleImageChange,

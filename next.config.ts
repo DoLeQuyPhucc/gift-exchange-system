@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
       "i5.walmartimages.com",
       "encrypted-tbn0.gstatic.com",
       "simg.zalopay.com.vn",
-      "firebasestorage.googleapis.com"
+      "firebasestorage.googleapis.com",
+      "dogolegia.vn",
+      "res.cloudinary.com"
     ],
   },
 };

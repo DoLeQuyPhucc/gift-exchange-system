@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import * as Dialog from '@radix-ui/react-dialog'
-import { FormData } from "@/app/types/form"
-
+import { FormData } from '@/app/types/types'
 interface LocationDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -9,43 +8,56 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Package, RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDate } from "@/app/utils/format-date";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  condition: string;
-  image: string;
-  available: boolean;
-  created_at: string;
-  quantity: number;
-}
+import axiosInstance from "@/app/api/axiosInstance";
+import { ApiResponse, Product, ProductAttribute } from "@/app/types/types";
 
 export default function ProductDetailPage() {
+  // Lấy itemId từ dynamic route parameter
   const params = useParams();
+  const itemId = Array.isArray(params?.id) ? params.id[0] : params?.id;  
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!itemId) {
+        setError("Invalid product ID");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(
-          `https://672f062d229a881691f19ad9.mockapi.io/api/items/${params.id}`
-        );
-        setProduct(response.data);
+        setLoading(true);
+        const response = await axiosInstance.get<ApiResponse>(`/items/${itemId}`);
+        
+        if (response.data.isSuccess && response.data.data) {
+          setProduct(response.data.data);
+        } else {
+          throw new Error(response.data.message || "Failed to fetch product");
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
+        setError("Không thể tải thông tin sản phẩm");
         toast.error("Không thể tải thông tin sản phẩm");
       } finally {
         setLoading(false);
       }
     };
 
-    if (params.id) {
-      fetchProduct();
-    }
-  }, [params.id]);
+    fetchProduct();
+  }, [itemId]);
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">{error}</h1>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -73,8 +85,16 @@ export default function ProductDetailPage() {
   }
 
   const handleAddToCart = async () => {
-
     toast.success("Đã thêm vào giỏ hàng");
+  };
+
+  // Thêm phần hiển thị thuộc tính sản phẩm
+  const renderAttributes = () => {
+    return product.itemAttributeValues.map((attr) => (
+      <div key={attr.id} className="flex items-center gap-2 text-gray-600">
+        <span>- {attr.value}</span>
+      </div>
+    ));
   };
 
   return (
@@ -83,7 +103,7 @@ export default function ProductDetailPage() {
         {/* Product Image */}
         <div className="relative h-[400px] rounded-xl overflow-hidden">
           <Image
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             fill
             className="object-cover"
@@ -111,10 +131,7 @@ export default function ProductDetailPage() {
           <div className="space-y-4 mb-8">
             <div className="flex items-center gap-2 text-gray-600">
               <Calendar size={20} />
-              <span>
-                Ngày đăng:{" "}
-                {formatDate(product.created_at)}
-              </span>
+              <span>Ngày đăng: {formatDate(product.createdAt)}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <Package size={20} />
@@ -124,32 +141,37 @@ export default function ProductDetailPage() {
               <RefreshCcw size={20} />
               <span>Tình trạng: {product.condition}</span>
             </div>
+            
+            {/* Product Attributes */}
+            <div className="space-y-2">
+              <h3 className="font-medium text-gray-800">Thông số kỹ thuật:</h3>
+              {renderAttributes()}
+            </div>
           </div>
-          {product.available ? (
 
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
-              <Button className="w-1/2 bg-orange-500 hover:bg-orange-600 text-white">
-                Liên hệ
-              </Button>
-              <Button 
-                className="w-1/2 bg-amber-500 hover:bg-amber-600 text-white" 
+          {product.available ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <Button className="w-1/2 bg-orange-500 hover:bg-orange-600 text-white">
+                  Liên hệ
+                </Button>
+                <Button 
+                  className="w-1/2 bg-amber-500 hover:bg-amber-600 text-white" 
+                  onClick={handleAddToCart}
+                >
+                  Thêm vào giỏ hàng
+                </Button>
+              </div>
+              <Button
+                size="lg"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                 onClick={handleAddToCart}
               >
-                Thêm vào giỏ hàng
+                Yêu cầu trao đổi
               </Button>
             </div>
-
-            <Button
-              size="lg"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-              onClick={handleAddToCart}
-            >
-              Yêu cầu trao đổi
-            </Button>
-          </div>
           ) : (
-          <Button
+            <Button
               size="lg"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white"
               disabled

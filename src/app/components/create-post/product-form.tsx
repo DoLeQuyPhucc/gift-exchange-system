@@ -4,10 +4,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WritingGuide } from './writing-guide'
-import { CategoryAttribute } from "@/app/types/categoryAttribute"
-import { AttributeValue } from "@/app/types/attributeValue"
-import { FormData } from "@/app/types/form"
-import { Category } from "@/app/types/category"
+import { CategoryAttribute } from "@/app/types/types"
+import { AttributeValue } from "@/app/types/types"
+import { FormData } from "@/app/types/types"
+import { Category } from "@/app/types/types"
 import CategorySelect from "./category-select"
 
 interface ProductFormProps {
