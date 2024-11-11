@@ -88,6 +88,25 @@ export default function ProductDetailPage() {
     toast.success("Đã thêm vào giỏ hàng");
   };
 
+  const handleRequest = async () => {
+    if (!product) {
+      toast.error("Không thể tạo yêu cầu!");
+    }
+    const data = {
+      itemId: product.id,
+      quantity: 1,
+    }
+
+    const response = await axiosInstance.post("/request/create", data);
+
+    if (!response.data.isSuccess) {
+      toast.error("Không thể tạo yêu cầu!");
+      return;
+    } else {
+      toast.success("Tạo yêu cầu trao đổi thành công!");
+    }
+  };
+
   // Thêm phần hiển thị thuộc tính sản phẩm
   const renderAttributes = () => {
     return product.itemAttributeValues.map((attr) => (
@@ -165,7 +184,7 @@ export default function ProductDetailPage() {
               <Button
                 size="lg"
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                onClick={handleAddToCart}
+                onClick={handleRequest}
               >
                 Yêu cầu trao đổi
               </Button>

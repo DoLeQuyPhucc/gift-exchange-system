@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/useAuthentication";
 import React, { useState } from "react";
 
-import { useAuth } from "../hooks/useAuthentication";
 
 interface FormErrors {
   name?: string;
@@ -27,7 +26,6 @@ const AuthScreens: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const router = useRouter();
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
