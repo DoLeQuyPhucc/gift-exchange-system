@@ -30,6 +30,7 @@ export const useCreatePost = () => {
     []
   );
   const [wards, setWards] = useState<{ code: string; name: string }[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
@@ -48,8 +49,11 @@ export const useCreatePost = () => {
     specificAddress: "",
     address: "",
     itemAttribute: [],
-    images: ["http://res.cloudinary.com/djh9baokn/image/upload/v1731340848/nt72tiilehklx5ft9agf.png"],
+    images: [],
   });
+
+  console.log("formData", formData);
+  
 
   // Fetch initial data
   useEffect(() => {
@@ -128,6 +132,25 @@ export const useCreatePost = () => {
       if (response.data.isSuccess) {
         // Handle success
         toast.success("Đăng bài thành công");
+        setFormData({
+          name: "",
+          description: "",
+          category: "",
+          categoryId: "",
+          condition: "Used",
+          image: "",
+          quantity: 1,
+          available: true,
+          attributes: {},
+          province: "",
+          district: "",
+          ward: "",
+          specificAddress: "",
+          address: "",
+          itemAttribute: [],
+          images: [],
+        });
+        router.push("/products");
       } else {
         // Handle error
       }
@@ -147,8 +170,10 @@ export const useCreatePost = () => {
     provinces,
     districts,
     wards,
+    images,
     isDialogOpen,
     setShowGuideTitle,
+    setImages,
     setIsLoading,
     setFormData,
     setShowGuideContent,
