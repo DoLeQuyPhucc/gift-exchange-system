@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, Package, MessageCircle, Check, X, SendHorizontal, UserCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatDate } from '../utils/format-date';
+import { useUser } from '../hooks/useUser';
 
 interface Request {
   id: string;
@@ -120,7 +121,7 @@ const RequestCard = ({ request, onApprove, loading }: {
 };
 
 const RequestList = () => {
-  const userId = localStorage.getItem('userId') ?? '';
+  const userId = useUser().userId;
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -129,6 +130,9 @@ const RequestList = () => {
     try {
       const response = await fetch('https://672f062d229a881691f19ad9.mockapi.io/api/requests');
       const data = await response.json();
+      
+      // const response = await axiosInstance.get('/request/my-requests');
+      // setRequests(response.data.data);
       setRequests(data);
     } catch (error) {
       console.error('Error fetching requests:', error);

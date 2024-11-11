@@ -3,13 +3,12 @@
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import useSearchStore from "@/shared/store/SearchStore";
 
-interface BannerProps {
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
-}
 
-export default function Banner({ searchTerm, setSearchTerm }: BannerProps) {
+export default function Banner() {
+  const setSearchQuery = useSearchStore((state) => state.setSearchQuery);
+  const searchQuery = useSearchStore((state) => state.searchQuery);
   return (
     <div
       className="relative h-[400px] rounded-xl overflow-hidden mb-8 group"
@@ -32,8 +31,8 @@ export default function Banner({ searchTerm, setSearchTerm }: BannerProps) {
               type="search"
               placeholder="Tìm kiếm sản phẩm..."
               className="w-full pl-12 bg-white/10 backdrop-blur-md border-white/20 text-white placeholder:text-white/70"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
