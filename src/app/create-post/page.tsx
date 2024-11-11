@@ -26,6 +26,7 @@ export default function CreatePost() {
     setShowGuideTitle,
     setIsLoading,
     setFormData,
+    hasCategorySelected,
     setShowGuideContent,
     setIsDialogOpen,
     handleFormChange,
@@ -109,12 +110,13 @@ export default function CreatePost() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <ImageUpload
-                imageUrls={images}
-                onImageUpload={handleImageUpload}
-                onDeleteImage={handleDeleteImage}
-                isLoading={isLoading}
-              />
+            <ImageUpload
+              imageUrls={images}
+              onImageUpload={handleImageUpload}
+              onDeleteImage={handleDeleteImage}
+              isLoading={isLoading}
+              isDisabled={!hasCategorySelected}
+            />
             </div>
 
             <div>
