@@ -15,10 +15,13 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "@/app/hooks/useAuthentication";
+import useSearchStore from "@/shared/store/SearchStore";
 
 export default function Navbar() {
+  const setSearchQuery = useSearchStore((state) => state.setSearchQuery);
+  const searchQuery = useSearchStore((state) => state.searchQuery);
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const token = localStorage.getItem("token");
   const { logout } = useAuth();
@@ -59,8 +62,8 @@ export default function Navbar() {
                 type="search"
                 placeholder="Tìm kiếm sản phẩm..."
                 className="pl-10 w-full bg-gray-50 rounded-lg focus:ring-2 focus:border-orange-300 focus:ring-orange-500 focus:outline-none dark:bg-orange-800"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>

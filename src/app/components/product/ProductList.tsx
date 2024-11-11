@@ -9,13 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/app/types/types';
+import { useUser } from '@/app/hooks/useUser';
+import useSearchStore from '@/shared/store/SearchStore';
 
-export default function ProductsList({ searchText }: { searchText: string }) {
-  const userId = localStorage.getItem('userId');
+export default function ProductsList() {
+  const userId = useUser().userId;
+
+  const searchQuery = useSearchStore((state) => state.searchQuery);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchText);
+  const [searchTerm, setSearchTerm] = useState(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortBy, setSortBy] = useState<'name' | 'condition'>('name');
 
@@ -45,8 +49,8 @@ export default function ProductsList({ searchText }: { searchText: string }) {
   }, [userId]);
 
   useEffect(() => {
-    setSearchTerm(searchText);
-  }, [searchText]);
+    setSearchTerm(searchQuery);
+  }, [searchQuery]);
 
   const categories = [...new Set(products.map((product) => product.category))];
 
