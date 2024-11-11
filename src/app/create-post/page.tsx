@@ -21,21 +21,35 @@ export default function CreatePost() {
     provinces,
     districts,
     wards,
-    isDialogOpen,
+    images,
+    setImages,
     setShowGuideTitle,
     setIsLoading,
     setFormData,
+    hasCategorySelected,
     setShowGuideContent,
     setIsDialogOpen,
     handleFormChange,
-    handleSaveLocation,
     handleSubmit
   } = useCreatePost();
 
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-
   const handleImageUpload = async (files: File[]) => {
     try {
+
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
+      const isValidSize = files.every(file => file.size <= MAX_FILE_SIZE);
+      if (!isValidSize) {
+        toast.error('Kích thước file không được vượt quá 10MB');
+        return;
+      }
+  
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      const isValidType = files.every(file => validTypes.includes(file.type));
+      if (!isValidType) {
+        toast.error('Chỉ chấp nhận file định dạng JPG, JPEG hoặc PNG');
+        return;
+      }
+  
       setIsLoading(true);
       const formData = new FormData();
       files.forEach((file) => {
@@ -46,25 +60,45 @@ export default function CreatePost() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 30000,
       });
   
-      if (response && response.data && response.data.isSuccess) {
-        setImageUrls(response.data.data);
-        setFormData((prev) => ({ ...prev, image: response.data.data }));
+      if (response?.data?.isSuccess) {
+        const uploadedUrls = response.data.data;
+        setImages(prev => [...prev, ...uploadedUrls]);
+        setFormData((prev) => ({ 
+          ...prev, 
+          images: [...prev.images, ...uploadedUrls]
+        }));
         toast.success('Tải ảnh lên thành công');
       } else {
-        toast.error('Tải ảnh lên thất bại');
+        throw new Error(response?.data?.message || 'Upload failed');
       }
     } catch (error: any) {
-      if (error.response) {
-        console.error(`Error uploading images: ${error.response.status}`, error.response.data);
+      console.error('Error uploading images:', error);
+      
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Quá thời gian tải ảnh, vui lòng thử lại');
+      } else if (error.response) {
+        toast.error(error.response.data?.message || 'Lỗi khi tải ảnh lên');
+      } else if (error.request) {
+        toast.error('Không thể kết nối đến server');
       } else {
-        console.error('Error uploading images:', error);
+        toast.error('Có lỗi xảy ra, vui lòng thử lại');
       }
-      toast.error('Tải ảnh lên thất bại');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDeleteImage = (index: number) => {
+    const newImageUrls = [...images];
+    newImageUrls.splice(index, 1);
+    setImages(newImageUrls);
+    setFormData(prev => ({
+      ...prev,
+      images: newImageUrls
+    }));
   };
 
   return (
@@ -76,10 +110,13 @@ export default function CreatePost() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <ImageUpload
-                imageUrls={imageUrls}
-                onImageUpload={handleImageUpload}
-              />
+            <ImageUpload
+              imageUrls={images}
+              onImageUpload={handleImageUpload}
+              onDeleteImage={handleDeleteImage}
+              isLoading={isLoading}
+              isDisabled={!hasCategorySelected}
+            />
             </div>
 
             <div>
@@ -101,17 +138,6 @@ export default function CreatePost() {
                 onFocusContent={() => setShowGuideContent(true)}
                 onBlurContent={() => setShowGuideContent(false)}
                 onAddressClick={() => setIsDialogOpen(true)}
-              />
-
-              <LocationDialog
-                isOpen={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                formData={formData}
-                provinces={provinces}
-                districts={districts}
-                wards={wards}
-                onFormChange={handleFormChange}
-                onSave={handleSaveLocation}
               />
             </div>
           </div>
