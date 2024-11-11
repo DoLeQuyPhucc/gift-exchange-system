@@ -15,6 +15,7 @@ export const useCreatePost = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showGuideTitle, setShowGuideTitle] = useState(false);
   const [showGuideContent, setShowGuideContent] = useState(false);
+  const [hasCategorySelected, setHasCategorySelected] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryAttributes, setCategoryAttributes] = useState<
     CategoryAttribute[]
@@ -53,7 +54,6 @@ export const useCreatePost = () => {
   });
 
   console.log("formData", formData);
-  
 
   // Fetch initial data
   useEffect(() => {
@@ -96,6 +96,10 @@ export const useCreatePost = () => {
   };
 
   const handleFormChange = (name: string, value: any) => {
+    if (name === "categoryId") {
+      setHasCategorySelected(!!value);
+    }
+
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       setFormData((prev) => ({
@@ -168,6 +172,7 @@ export const useCreatePost = () => {
     currentCategoryAttributes,
     attributeValues,
     provinces,
+    hasCategorySelected,
     districts,
     wards,
     images,
