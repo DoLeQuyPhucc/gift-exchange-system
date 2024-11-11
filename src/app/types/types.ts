@@ -34,9 +34,10 @@ export interface FormData {
   name: string;
   description: string;
   category: string;
+  categoryId: string;
   condition: string;
   image: string;
-  quantity: string;
+  quantity: number;
   available: boolean;
   attributes: Record<string, any>;
   province: string;
@@ -44,12 +45,17 @@ export interface FormData {
   ward: string;
   specificAddress: string;
   address: string;
+  itemAttribute: {
+    attributeId: string;
+    value: string;
+  }[];
+  images: string[];
 }
 
 export interface CategoryAttribute {
   id: string;
-  category_id: string;
-  attribute_name: string;
+  categoryId: string;
+  attributeName: string;
   data_type: string;
   is_required: boolean;
 }
