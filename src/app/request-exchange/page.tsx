@@ -83,11 +83,14 @@ const RequestCard = ({ request, onApprove, onReject, loading, isMyRequest }: {
             <p className="font-medium text-gray-900">{request.requester_name}</p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2 text-gray-600">
-          <MessageCircle className="h-4 w-4 text-orange-500" />
-          <p>{request.message}</p>
-        </div>
+        {
+          request.message && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <MessageCircle className="h-4 w-4 text-orange-500" />
+              <p>{request.message}</p>
+            </div>
+          )
+        }
         
         <div className="flex items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-1">
@@ -95,6 +98,7 @@ const RequestCard = ({ request, onApprove, onReject, loading, isMyRequest }: {
             <span>Quantity: {request.quantity}</span>
           </div>
           <div className="flex items-center gap-4">
+            Owner:
           <img
             src={request.recipient_image}
             alt={request.recipient_name}
@@ -194,9 +198,9 @@ const RequestList = () => {
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* My Requests Section */}
       <Card className="bg-white shadow-lg">
-        <CardHeader className="bg-blue-500 text-white rounded-t-lg">
-          <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <UserCircle className="h-6 w-6" />
+        <CardHeader className="bg-blue-400 text-white rounded-t-lg">
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <UserCircle className="h-5 w-5" />
             Các yêu cầu của tôi
           </CardTitle>
         </CardHeader>
@@ -221,8 +225,8 @@ const RequestList = () => {
       {/* Requests To Me Section */}
       <Card className="bg-white shadow-lg">
         <CardHeader className="bg-orange-500 text-white rounded-t-lg">
-          <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <SendHorizontal className="h-6 w-6" />
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <SendHorizontal className="h-5 w-5" />
             Các yêu cầu được gửi tới tôi
           </CardTitle>
         </CardHeader>
