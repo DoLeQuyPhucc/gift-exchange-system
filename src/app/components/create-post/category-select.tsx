@@ -4,7 +4,7 @@ import * as Popover from '@radix-ui/react-popover'
 import { Category } from '@/app/types/types'
 
 interface CategorySelectProps {
-  onValueChange: (value: string) => void
+  onValueChange: (value: string, id: string) => void
   categories: Category[]
 }
 
@@ -17,9 +17,9 @@ const CategorySelect = ({ onValueChange, categories }: CategorySelectProps) => {
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleSelect = (currentValue: string) => {
+  const handleSelect = (currentValue: string, id: string) => {
     setValue(currentValue)
-    onValueChange(currentValue)
+    onValueChange(currentValue, id)
     setOpen(false)
     setSearchTerm("")
   }
@@ -63,7 +63,7 @@ const CategorySelect = ({ onValueChange, categories }: CategorySelectProps) => {
                 <div
                   key={category.id}
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                  onClick={() => handleSelect(category.name)}
+                  onClick={() => handleSelect(category.name, category.id)}
                 >
                   <span className="w-6">
                     {value === category.name && (
