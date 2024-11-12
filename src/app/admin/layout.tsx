@@ -1,3 +1,4 @@
+import MainLayout from "../components/layout/MainLayouts"
 import AuthProvider from "../components/providers/AuthProvider"
 
 export default function AuthLayout({
@@ -7,7 +8,9 @@ export default function AuthLayout({
 }) {
   return (
     <AuthProvider>
-      {children}
+        <MainLayout>
+            {children}
+        </MainLayout>
     </AuthProvider>
   )
 }

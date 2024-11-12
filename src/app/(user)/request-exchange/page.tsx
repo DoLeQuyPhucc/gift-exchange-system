@@ -6,8 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Package, MessageCircle, Check, X, SendHorizontal, UserCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatDate } from '../utils/format-date';
-import axiosInstance from '../api/axiosInstance';
+import { formatDate } from '@/app/utils/format-date';
+import axiosInstance from '@/app/api/axiosInstance';
 
 interface Request {
   id: string;
@@ -195,7 +195,7 @@ const RequestList = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="py-12 space-y-6 max-w-6xl mx-auto">
       {/* My Requests Section */}
       <Card className="bg-white shadow-lg">
         <CardHeader className="bg-blue-400 text-white rounded-t-lg">

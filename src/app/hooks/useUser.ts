@@ -6,9 +6,11 @@ export const useUser = () => {
     : null;
 
   const userId = userInfo ? userInfo.userId : null;
+  const userRole = userInfo ? userInfo.role : null;
 
   return {
     userInfo,
     userId,
+    userRole
   };
 };

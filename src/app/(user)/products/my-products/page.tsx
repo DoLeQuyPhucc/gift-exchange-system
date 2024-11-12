@@ -26,7 +26,7 @@ export default function ProductsList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axiosInstance.get('/items');
+        const response = await axiosInstance.get('/items/current-user');
         const productsData = response.data.data.map((item: any) => ({
           id: item.id,
           name: item.name,
@@ -55,7 +55,7 @@ export default function ProductsList() {
   const categories = [...new Set(products.map((product) => product.category))];
 
   const filteredProducts = products
-    .filter((product) => product.owner_id !== userId)
+    .filter((product) => product.owner_id === userId)
     .filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -69,7 +69,8 @@ export default function ProductsList() {
     });
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto py-12">
+        <p className="text-center text-3xl font-semibold">Sản phẩm của tôi</p>
       {/* Filters Section */}
       <div className="mb-8 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -94,7 +95,7 @@ export default function ProductsList() {
             variant={selectedCategory === '' ? 'default' : 'outline'}
             onClick={() => setSelectedCategory('')}
             className={`rounded-full shrink-0 ${
-              selectedCategory === '' ? 'py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-orange-400 disabled:to-orange-500' : ''
+              selectedCategory === '' ? 'bg-orange-500 hover:bg-orange-600' : ''
             }`}
           >
             Tất cả
@@ -105,7 +106,7 @@ export default function ProductsList() {
               variant={selectedCategory === category ? 'default' : 'outline'}
               onClick={() => setSelectedCategory(category)}
               className={`rounded-full shrink-0 ${
-                selectedCategory === category ? 'py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-orange-400 disabled:to-orange-500' : ''
+                selectedCategory === category ? 'bg-orange-500 hover:bg-orange-600' : ''
               }`}
             >
               {category}

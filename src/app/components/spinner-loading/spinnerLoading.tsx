@@ -1,13 +1,14 @@
 import React from 'react';
 
-const LoadingSpinner = ({ width = '1', height = '1', color = 'orange-500' }) => {
+const LoadingSpinner = ({ width = '12px', height = '12px', color = '#f97316' }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex items-center justify-center" style={{height: '100%', width: '100%'}}>
       <svg
         aria-hidden="true"
-        className={`w-${width} h-${height} text-gray-200 animate-spin dark:text-gray-600 fill-${color}`}
+        className={`text-gray-200 animate-spin dark:text-gray-600`}
         viewBox="0 0 100 101"
         fill="none"
+        style={{height: `${height}`, width: `${width}`, fill: `${color}`}}
         xmlns="http://www.w3.org/2000/svg"
       >
         <path

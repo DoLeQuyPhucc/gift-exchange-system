@@ -71,20 +71,47 @@ export default function Navbar() {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             {!isLoggedIn ? (
-              <button className="py-2 px-4 text-white rounded-lg bg-orange-500 hover:bg-orange-600" onClick={login}>
-                Login
+              <button
+                className="py-2 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-orange-400 disabled:to-orange-500"
+                onClick={login}
+              >
+                Đăng nhập
               </button>
             ) : (
               <>
-                <Link href="/create-post" className="p-2 hover:bg-gray-100 rounded-full">
-                  <PlusCircle size={20} />
-                </Link>
-                <button className="p-2 hover:bg-gray-100 rounded-full">
-                  <Bell size={20} />
-                </button>
-                <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full">
-                  <ShoppingCart size={20} />
-                </Link>
+                <div className="relative group">
+                  <Link
+                    href="/create-post"
+                    className="p-2 hover:bg-gray-100 rounded-full flex items-center transition-all duration-300"
+                  >
+                    <PlusCircle size={20} />
+                    <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Thêm sản phẩm
+                    </span>
+                  </Link>
+                </div>
+
+                <div className="relative group">
+                  <button className="p-2 hover:bg-gray-100 rounded-full">
+                    <Bell size={20} />
+                    <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Thông báo
+                    </span>
+                  </button>
+                </div>
+
+                <div className="relative group">
+                  <Link
+                    href="/cart"
+                    className="p-2 hover:bg-gray-100 rounded-full flex items-center transition-all duration-300"
+                  >
+                    <ShoppingCart size={20} />
+                    <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Giỏ hàng
+                    </span>
+                  </Link>
+                </div>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <Avatar>
@@ -94,17 +121,34 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
-                      <Link href="#" className="p-2 hover:bg-gray-100 rounded-full">
+                      <Link
+                        href="#"
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                      >
                         Tài khoản
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link href="/request-exchange" className="p-2 hover:bg-gray-100 rounded-full">
+                      <Link
+                        href="/products/my-products"
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                      >
+                        Sản phẩm của tôi
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link
+                        href="/request-exchange"
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                      >
                         Quản lí yêu cầu trao đổi
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link href="#" className="p-2 hover:bg-gray-100 rounded-full">
+                      <Link
+                        href="#"
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                      >
                         Đơn hàng
                       </Link>
                     </DropdownMenuItem>

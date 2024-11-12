@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ImageUpload } from '../components/create-post/image-upload';
-import { ProductForm } from '../components/create-post/product-form';
-import { LocationDialog } from '../components/create-post/location-dialog';
-import { useCreatePost } from '../hooks/useCreatePost';
+import { ImageUpload } from '@/app/components/create-post/image-upload';
+import { ProductForm } from '@/app/components/create-post/product-form';
+import { LocationDialog } from '@/app/components/create-post/location-dialog';
+import { useCreatePost } from '@/app/hooks/useCreatePost';
 import toast from 'react-hot-toast';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '@/app/api/axiosInstance';
 
 export default function CreatePost() {
   const {
