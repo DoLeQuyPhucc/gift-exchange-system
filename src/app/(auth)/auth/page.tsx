@@ -18,7 +18,8 @@ const AuthScreens: React.FC = () => {
 
   // Form states
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmedPassword, setConfirmedPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,11 +35,11 @@ const AuthScreens: React.FC = () => {
       newErrors.name = "Name is required";
     }
 
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
-    }
+    // if (!email.trim()) {
+    //   newErrors.email = "Email is required";
+    // } else if (!/\S+@\S+\.\S+/.test(email)) {
+    //   newErrors.email = "Email is invalid";
+    // }
 
     if (!password) {
       newErrors.password = "Password is required";
@@ -62,19 +63,19 @@ const AuthScreens: React.FC = () => {
     if (!validateForm()) return;
 
     if (isSignIn) {
-      await login({ email, password });
+      await login({ phone, password });
     } else {
-      const success = await register({ name, email, password, confirmedPassword });
-      if (success) {
-        setIsSignIn(true);
-        resetForm();
-      }
+      // const success = await register({ name, p, password, confirmedPassword });
+      // if (success) {
+      //   setIsSignIn(true);
+      //   resetForm();
+      // }
     }
   };
 
   const resetForm = () => {
     setName("");
-    setEmail("");
+    setPhone("");
     setPassword("");
     setConfirmedPassword("");
     setErrors({});
@@ -162,18 +163,18 @@ const AuthScreens: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
+              Phone Number
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className={`w-full px-4 py-2 rounded-lg border ${
                 errors.email
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-amber-500"
               } focus:border-transparent focus:ring-2 transition-colors`}
-              placeholder="you@example.com"
+              placeholder="0123xxxxxx"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email}</p>

@@ -5,7 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import LoadingSpinner from '../spinner-loading/spinnerLoading'
 import { useUser } from '@/app/hooks/useUser'
 
-const publicRoutes = ['/auth' , '/products']
+// const publicRoutes = ['/auth', '/products' ]
+const publicRoutes = ['/auth' ]
 
 export default function AuthProvider({
   children,

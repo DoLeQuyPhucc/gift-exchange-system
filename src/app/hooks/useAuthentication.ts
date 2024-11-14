@@ -9,7 +9,7 @@ interface LoginResponse {
   data: {
     userId: string;
     username: string;
-    email: string;
+    phone: string;
     role: string;
     token: string;
     refreshToken: string;
@@ -18,7 +18,7 @@ interface LoginResponse {
 }
 
 interface AuthUser {
-  email: string;
+  phone: string;
   password: string;
 }
 
@@ -36,13 +36,13 @@ export const useAuth = () => {
     return passwordRegex.test(password);
   };
 
-  const login = async ({ email, password }: AuthUser) => {
+  const login = async ({ phone, password }: AuthUser) => {
     setLoading(true);
     try {
       const response = await axiosInstance.post<LoginResponse>(
         "authentication/login",
         {
-          email,
+          phone,
           password,
         }
       );
@@ -59,7 +59,7 @@ export const useAuth = () => {
         const userInfo = {
           userId,
           username,
-          email,
+          phone,
           role,
         };
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
@@ -76,7 +76,7 @@ export const useAuth = () => {
 
   const register = async ({
     name,
-    email,
+    phone,
     password,
     confirmedPassword,
   }: RegisterUser) => {
@@ -96,9 +96,9 @@ export const useAuth = () => {
     try {
       const response = await axiosInstance.post("user/register", {
         username: name,
-        email,
+        phone,
         password,
-        confirmedPassword
+        confirmedPassword,
       });
 
       if (response.data.isSuccess) {
