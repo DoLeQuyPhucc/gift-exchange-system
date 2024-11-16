@@ -1,5 +1,9 @@
-"use client";
+'use client'
+
 import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Eye, CheckCircle, XCircle } from "lucide-react";
 import axiosInstance from "../api/axiosInstance";
 import toast from "react-hot-toast";
 
@@ -24,25 +28,83 @@ interface Product {
   status: string;
 }
 
+const ProductDetailsModal = ({ product }: { product: Product }) => (
+  <div className="grid grid-cols-2 gap-4">
+    <div className="col-span-2">
+      <img
+        src={product.images[0]}
+        alt={product.name}
+        className="w-full h-48 object-cover rounded-lg"
+      />
+    </div>
+    <div className="space-y-4 col-span-2">
+      <h3 className="text-xl font-bold">{product.name}</h3>
+      <p className="text-gray-600">{product.description}</p>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="font-semibold">Category</p>
+          <p>{product.category}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Condition</p>
+          <p>{product.condition}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Points</p>
+          <p>{product.point}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Quantity</p>
+          <p>{product.quantity}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Created At</p>
+          <p>{new Date(product.createdAt).toLocaleDateString()}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Expires At</p>
+          <p>{new Date(product.expiresAt).toLocaleDateString()}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Updated At</p>
+          <p>{new Date(product.updatedAt).toLocaleDateString()}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Date Remaining</p>
+          <p>{product.dateRemaining} days</p>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2 mt-4">
+        <img
+          src={product.profilePicture}
+          alt={product.owner_Name}
+          className="w-10 h-10 rounded-full"
+        />
+        <div>
+          <p className="font-semibold">Owner</p>
+          <p>{product.owner_Name}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const ProductDashboard: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [pendingProducts, setPendingProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(10);
 
   const fetchProducts = async () => {
     const response = await axiosInstance.get("items/admin/view-all");
     if (response.data.isSuccess) {
-
-      //sort pending products then approved products
       const sortedProducts = response.data.data.sort((a: Product, b: Product) => {
-        if (a.status === "Pending" && b.status === "Approved") {
-          return -1;
-        } else if (a.status === "Approved" && b.status === "Pending") {
-          return 1;
-        } else {
-          return 0;
-        }
+        if (a.status === "Pending" && b.status === "Approved") return -1;
+        if (a.status === "Approved" && b.status === "Pending") return 1;
+        return 0;
       });
       setProducts(sortedProducts);
     } else {
@@ -51,10 +113,9 @@ const ProductDashboard: React.FC = () => {
   };
 
   const handleApprove = async (product: Product) => {
-    console.log(`Approving product: ${product.name}`);
     const response = await axiosInstance.post(`items/approve/${product.id}`);
-    if (response.data.isSuccess === true) {
-      setPendingProducts(pendingProducts.filter((p) => p.id !== product.id));
+    if (response.data.isSuccess) {
+      await fetchProducts();
       toast.success("Product approved successfully");
     } else {
       toast.error(response.data.message);
@@ -62,11 +123,10 @@ const ProductDashboard: React.FC = () => {
   };
 
   const handleReject = async (product: Product) => {
-    console.log(`Rejecting product: ${product.name}`);
     const response = await axiosInstance.post(`items/reject/${product.id}`);
-    if (response.data.isSuccess === true) {
-      setPendingProducts(pendingProducts.filter((p) => p.id !== product.id));
-      toast.success("Product reject successfully");
+    if (response.data.isSuccess) {
+      await fetchProducts();
+      toast.success("Product rejected successfully");
     } else {
       toast.error(response.data.message);
     }
@@ -74,82 +134,48 @@ const ProductDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-    setPendingProducts(products.filter((p) => p.status === "Pending"));
-  }, [products]);
+  }, []);
 
-  // Get current products
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
-  // Change page
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
   return (
-    <div className="w-full mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-md p-6 my-12">
-        <h2 className="text-2xl text-orange-500 font-bold mb-4 py-6">Product Dashboard</h2>
+    <Card className="w-full mx-auto p-4">
+      <CardHeader>
+        <CardTitle className="text-2xl text-orange-500">Product Dashboard</CardTitle>
+      </CardHeader>
+      <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full table-auto text-sm rounded-lg">
+          <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-100">
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Name</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Image</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Category</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Condition</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Description</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Points</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Quantity</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Owner</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Available</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Date Remaining</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Create At</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Update At</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Expires At</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Status</th>
-                <th className="px-4 py-4 text-left text-xl whitespace-nowrap">Actions</th>
+                <th className="px-4 py-2 text-left">Product</th>
+                <th className="px-4 py-2 text-left">Points</th>
+                <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {currentProducts.map((product) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{product.name}</td>
                   <td className="px-4 py-2">
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-12 h-12 rounded-lg"
-                      style={{ objectFit: "cover" }}
-                    />
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-500">{product.category}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-2">{product.category}</td>
-                  <td className="px-4 py-2">{product.condition}</td>
-                  <td className="px-4 py-2 truncate max-w-xs">{product.description}</td>
                   <td className="px-4 py-2">{product.point}</td>
-                  <td className="px-4 py-2">{product.quantity}</td>
-                  <td className="px-4 py-2 flex items-center">
-                    <img
-                      src={product.profilePicture}
-                      alt={product.owner_Name}
-                      className="w-8 h-8 rounded-full mr-2"
-                      style={{ objectFit: "cover" }}
-                    />
-                    {product.owner_Name}
-                  </td>
-                  <td className="px-4 py-2">
-                    {product.available ? (
-                      <span className="px-2 py-1 bg-green-200 text-green-800 rounded-full">Yes</span>
-                    ) : (
-                      <span className="px-2 py-1 bg-red-200 text-red-800 rounded-full">No</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2">{product.dateRemaining} days</td>
-                  <td className="px-4 py-2">{new Date(product.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{new Date(product.updatedAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{new Date(product.expiresAt).toLocaleDateString()}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`px-2 py-1 rounded-full font-medium ${
+                      className={`px-2 py-1 rounded-full text-sm font-medium ${
                         product.status === "Pending"
                           ? "bg-yellow-200 text-yellow-800"
                           : product.status === "Approved"
@@ -160,35 +186,50 @@ const ProductDashboard: React.FC = () => {
                       {product.status}
                     </span>
                   </td>
-                  <td className="px-4 py-2 space-x-2">
-                    {product.status === "Pending" && (
-                      <>
-                        <button
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded"
-                          onClick={() => handleApprove(product)}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
-                          onClick={() => handleReject(product)}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
+                  <td className="px-4 py-2">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                        title="View Details"
+                      >
+                        <Eye size={20} />
+                      </button>
+                      {product.status === "Pending" && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(product)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+                            title="Approve"
+                          >
+                            <CheckCircle size={20} />
+                          </button>
+                          <button
+                            onClick={() => handleReject(product)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                            title="Reject"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
           <div className="flex justify-center mt-4">
             <nav>
               <ul className="inline-flex items-center -space-x-px">
                 {[...Array(Math.ceil(products.length / productsPerPage)).keys()].map((number) => (
                   <li key={number}>
                     <button
-                      onClick={() => paginate(number + 1)}
+                      onClick={() => setCurrentPage(number + 1)}
                       className={`px-3 py-2 leading-tight ${
                         currentPage === number + 1
                           ? "bg-blue-500 text-white"
@@ -203,8 +244,17 @@ const ProductDashboard: React.FC = () => {
             </nav>
           </div>
         </div>
-      </div>
-    </div>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Product Details</DialogTitle>
+            </DialogHeader>
+            {selectedProduct && <ProductDetailsModal product={selectedProduct} />}
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 };
 
