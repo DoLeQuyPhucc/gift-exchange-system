@@ -1,16 +1,14 @@
-import MainLayout from "../components/layout/MainLayouts"
-import AuthProvider from "../components/providers/AuthProvider"
+import AdminLayout from "../components/layout/AdminLayouts";
+import AuthProvider from "../components/providers/AuthProvider";
 
 export default function AuthLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <AuthProvider>
-        <MainLayout>
-            {children}
-        </MainLayout>
+      <AdminLayout>{children}</AdminLayout>
     </AuthProvider>
-  )
+  );
 }

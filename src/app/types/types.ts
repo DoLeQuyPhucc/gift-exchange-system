@@ -2,17 +2,48 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  category: string;
+  subCategory: {
+    id: string;
+    subCategoryName: string;
+    category: {
+      id: string;
+      name: string;
+    };
+  };
+  desiredSubCategory: {
+    id: string;
+    subCategoryName: string;
+    category: {
+      id: string;
+      name: string;
+    };
+  };
   condition: string;
+  isGift: boolean;
+  availableTime: string;
+  owner_Name: string;
   owner_id: string;
-  email: string;
   profilePicture: string;
-  images: string[];
   available: boolean;
   createdAt: string;
+  expiresAt: string;
   updatedAt: string;
-  itemAttributeValues: ProductAttribute[];
+  images: string[];
   quantity: number;
+  dateRemaining: number;
+  status: string;
+  address?: SubInfoAddress;
+}
+
+interface SubInfoAddress {
+  addressId: string;
+  address: string;
+  addressCoordinates: AddressCoordinates;
+}
+
+export interface AddressCoordinates {
+  latitude: string;
+  longitude: string;
 }
 
 export interface ProductAttribute {
@@ -70,4 +101,12 @@ export interface AttributeValue {
   product_id: string;
   attribute_id: string;
   value: string;
+}
+
+export interface Report {
+  id: string;
+  reporterName: string;
+  reportedName: string;
+  reportReasons: string;
+  createdAt: string;
 }
