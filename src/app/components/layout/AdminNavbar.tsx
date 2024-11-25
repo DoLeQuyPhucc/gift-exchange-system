@@ -64,11 +64,17 @@ export default function AdminNavbar() {
               >
                 Reports 
               </Link>
-              <Link 
+              {/* <Link 
                 href="/admin/users" 
                 className="text-gray-700 hover:text-orange-600 font-medium transition-colors duration-200"
               >
                 Users 
+              </Link> */}
+              <Link 
+                href="/admin/configs" 
+                className="text-gray-700 hover:text-orange-600 font-medium transition-colors duration-200"
+              >
+                Configs 
               </Link>
             </div>
           )}
