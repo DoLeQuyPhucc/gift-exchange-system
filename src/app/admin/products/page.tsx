@@ -111,6 +111,15 @@ const ProductDashboard: React.FC = () => {
     currentPage * productsPerPage
   );
 
+  const statusCounts = products.reduce(
+    (acc, product) => {
+      const status = product.status.toLowerCase();
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    },
+    {} as { [key: string]: number }
+  );
+
   const formatAvailableTime = (timeString: string) => {
     if (!timeString) return "Không xác định";
   
@@ -180,18 +189,32 @@ const ProductDashboard: React.FC = () => {
               </div>
 
               {/* Filter */}
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full md:w-40 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
-                >
-                  <option value="all">Bộ lọc</option>
-                  <option value="pending">Đang chờ duyệt</option>
-                  <option value="approved">Đã duyệt</option>
-                  <option value="rejected">Đã từ chối</option>
-                </select>
+              <div className="flex items-center gap-4">
+                <div className="flex gap-2">
+                  <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-sm">
+                    Đang chờ: {statusCounts.pending || 0}
+                  </span>
+                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">
+                    Đã duyệt: {statusCounts.approved || 0}
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">
+                    Đã từ chối: {statusCounts.rejected || 0}
+                  </span>
+                </div>
+                
+                <div className="relative">
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full md:w-40 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+                  >
+                    <option value="all">Bộ lọc</option>
+                    <option value="pending">Đang chờ</option>
+                    <option value="approved">Đã duyệt</option>
+                    <option value="rejected">Đã từ chối</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
