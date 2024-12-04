@@ -19,7 +19,6 @@ interface LoginResponse {
 
 interface AuthUser {
   phone: string;
-  password: string;
 }
 
 interface RegisterUser extends AuthUser {
@@ -36,14 +35,13 @@ export const useAuth = () => {
     return passwordRegex.test(password);
   };
 
-  const login = async ({ phone, password }: AuthUser) => {
+  const login = async ({ phone }: AuthUser) => {
     setLoading(true);
     try {
       const response = await axiosInstance.post<LoginResponse>(
         "authentication/login",
         {
           phone,
-          password,
         }
       );
 
@@ -74,45 +72,6 @@ export const useAuth = () => {
     }
   };
 
-  const register = async ({
-    name,
-    phone,
-    password,
-    confirmedPassword,
-  }: RegisterUser) => {
-    if (password !== confirmedPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      toast.error(
-        "Password must be 8-12 characters with at least one uppercase letter, one number, and one special character (!@#$%^&*)"
-      );
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await axiosInstance.post("user/register", {
-        username: name,
-        phone,
-        password,
-        confirmedPassword,
-      });
-
-      if (response.data.isSuccess) {
-        toast.success("Registration successful! Please login.");
-        return true;
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Registration failed");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const logout = () => {
     localStorage.clear();
     router.push("/auth");
@@ -120,7 +79,6 @@ export const useAuth = () => {
 
   return {
     login,
-    register,
     logout,
     loading,
   };

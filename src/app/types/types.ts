@@ -10,12 +10,12 @@ export interface Product {
       name: string;
     };
   };
-  desiredSubCategory: {
-    id: string;
-    subCategoryName: string;
-    category: {
-      id: string;
-      name: string;
+  desiredSubCategory?: {
+    id?: string;
+    subCategoryName?: string;
+    category?: {
+      id?: string;
+      name?: string;
     };
   };
   condition: string;

@@ -70,3 +70,28 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.DialogContent {
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  padding-right: 1rem !important;
+}
+
+/* Custom scrollbar styles */
+.DialogContent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.DialogContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.DialogContent::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.DialogContent::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
