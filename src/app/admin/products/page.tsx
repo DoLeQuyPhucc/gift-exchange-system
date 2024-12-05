@@ -260,7 +260,7 @@ const ProductDashboard: React.FC = () => {
                               {product.name}
                             </h3>
                             <p className="text-sm text-gray-500">
-                              {product.subCategory.category.name}
+                              {product.category.name}
                             </p>
                           </div>
                         </div>
@@ -516,7 +516,7 @@ const ProductDashboard: React.FC = () => {
                           </span>
                         </div>
                         <p className="mt-1 text-orange-600 font-medium">
-                          {selectedProduct.subCategory.category.name}
+                          {selectedProduct.category.name}
                         </p>
                       </div>
                       <div className="bg-orange-50 p-4 rounded-xl">
@@ -552,8 +552,8 @@ const ProductDashboard: React.FC = () => {
                           </p>
                           <p className="mt-1 text-orange-600 font-medium">
                             {
-                              selectedProduct.desiredSubCategory
-                                ?.subCategoryName
+                              selectedProduct.desiredCategory
+                                ?.name
                             }
                           </p>
                         </div>

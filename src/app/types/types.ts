@@ -2,22 +2,16 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  subCategory: {
+  category: {
     id: string;
-    subCategoryName: string;
-    category: {
-      id: string;
-      name: string;
-    };
+    parentId: string;
+    name: string;
   };
-  desiredSubCategory?: {
-    id?: string;
-    subCategoryName?: string;
-    category?: {
-      id?: string;
-      name?: string;
-    };
-  };
+  desiredCategory: {
+    id: string;
+    parentId: string;
+    name: string;
+  } | null;
   condition: string;
   isGift: boolean;
   availableTime: string;
@@ -27,12 +21,15 @@ export interface Product {
   available: boolean;
   createdAt: string;
   expiresAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
   images: string[];
+  video: string | null;
   quantity: number;
   dateRemaining: number;
   status: string;
   address?: SubInfoAddress;
+  itemRequestTo: number;
+  requestForItem: number;
 }
 
 interface SubInfoAddress {
