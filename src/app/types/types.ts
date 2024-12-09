@@ -27,9 +27,15 @@ export interface Product {
   quantity: number;
   dateRemaining: number;
   status: string;
-  address?: SubInfoAddress;
+  address: Address;
   itemRequestTo: number;
   requestForItem: number;
+}
+
+interface Address {
+  addressId: string;
+  address: string;
+  addressCoordinates: string;
 }
 
 interface SubInfoAddress {

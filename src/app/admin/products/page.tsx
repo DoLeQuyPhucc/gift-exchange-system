@@ -13,6 +13,7 @@ import {
   Calendar,
   Package2,
   Tag,
+  MapPin,
 } from "lucide-react";
 import {
   Dialog,
@@ -95,9 +96,7 @@ const ProductDashboard: React.FC = () => {
     .filter(
       (product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.subCategory.category.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+        product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((product) =>
       filterStatus === "all"
@@ -111,37 +110,34 @@ const ProductDashboard: React.FC = () => {
     currentPage * productsPerPage
   );
 
-  const statusCounts = products.reduce(
-    (acc, product) => {
-      const status = product.status.toLowerCase();
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    },
-    {} as { [key: string]: number }
-  );
+  const statusCounts = products.reduce((acc, product) => {
+    const status = product.status.toLowerCase();
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as { [key: string]: number });
 
   const formatAvailableTime = (timeString: string) => {
     if (!timeString) return "Không xác định";
-  
+
     try {
       const [type, hours, days] = timeString.split(" ");
       const [startTime, endTime] = hours.split("_");
-      
+
       const dayTranslations: { [key: string]: string } = {
-        'mon': 'Thứ 2',
-        'tue': 'Thứ 3',
-        'wed': 'Thứ 4',
-        'thu': 'Thứ 5',
-        'fri': 'Thứ 6',
-        'sat': 'Thứ 7',
-        'sun': 'Chủ nhật'
+        mon: "Thứ 2",
+        tue: "Thứ 3",
+        wed: "Thứ 4",
+        thu: "Thứ 5",
+        fri: "Thứ 6",
+        sat: "Thứ 7",
+        sun: "Chủ nhật",
       };
-  
+
       const daysArray = days.split("_").map((day) => {
         const lowercaseDay = day.toLowerCase();
         return dayTranslations[lowercaseDay] || day;
       });
-  
+
       return (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -189,32 +185,45 @@ const ProductDashboard: React.FC = () => {
               </div>
 
               {/* Filter */}
-              <div className="flex items-center gap-4">
-                <div className="flex gap-2">
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-sm">
-                    Đang chờ: {statusCounts.pending || 0}
-                  </span>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">
-                    Đã duyệt: {statusCounts.approved || 0}
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">
-                    Đã từ chối: {statusCounts.rejected || 0}
-                  </span>
-                </div>
-                
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-full md:w-40 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFilterStatus("pending")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "pending"
+                      ? "bg-yellow-500 text-white"
+                      : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                  }`}
+                >
+                  Đang chờ: {statusCounts.pending || 0}
+                </button>
+                <button
+                  onClick={() => setFilterStatus("approved")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "approved"
+                      ? "bg-green-500 text-white"
+                      : "bg-green-100 text-green-700 hover:bg-green-200"
+                  }`}
+                >
+                  Đã duyệt: {statusCounts.approved || 0}
+                </button>
+                <button
+                  onClick={() => setFilterStatus("rejected")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "rejected"
+                      ? "bg-red-500 text-white"
+                      : "bg-red-100 text-red-700 hover:bg-red-200"
+                  }`}
+                >
+                  Đã từ chối: {statusCounts.rejected || 0}
+                </button>
+                {filterStatus !== "all" && (
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md text-sm transition-colors"
                   >
-                    <option value="all">Bộ lọc</option>
-                    <option value="pending">Đang chờ</option>
-                    <option value="approved">Đã duyệt</option>
-                    <option value="rejected">Đã từ chối</option>
-                  </select>
-                </div>
+                    Xóa bộ lọc
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -551,10 +560,7 @@ const ProductDashboard: React.FC = () => {
                             DANH MỤC MUỐN ĐỔI
                           </p>
                           <p className="mt-1 text-orange-600 font-medium">
-                            {
-                              selectedProduct.desiredCategory
-                                ?.name
-                            }
+                            {selectedProduct.desiredCategory?.name}
                           </p>
                         </div>
                       )}
@@ -602,6 +608,19 @@ const ProductDashboard: React.FC = () => {
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Add Address - New Section */}
+                    <div className="bg-orange-50 p-4 rounded-xl col-span-2">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-orange-500" />
+                        <span className="text-sm font-semibold text-gray-700">
+                          ĐỊA CHỈ
+                        </span>
+                      </div>
+                      <p className="mt-1 text-orange-600 font-medium">
+                        {selectedProduct.address?.address || "Không có địa chỉ"}
+                      </p>
                     </div>
 
                     {/* Owner Info */}
