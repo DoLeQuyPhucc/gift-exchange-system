@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import axiosInstance from "@/app/api/axiosInstance";
-import { Product } from "@/app/types/types";
+import { Product, TimeRange } from "@/app/types/types";
 import { formatDate } from "@/app/utils/format-date";
 
 const ProductDashboard: React.FC = () => {
@@ -118,49 +118,114 @@ const ProductDashboard: React.FC = () => {
 
   const formatAvailableTime = (timeString: string) => {
     if (!timeString) return "Không xác định";
+    return formatTimeRangeDisplay(timeString);
+  };
+  
+const parseTimeRange = (timeString: string): {
+  type: string;
+  timeRanges: TimeRange[];
+} => {
+  if (!timeString) return { type: '', timeRanges: [] };
 
-    try {
-      const [type, hours, days] = timeString.split(" ");
-      const [startTime, endTime] = hours.split("_");
+  const [type, ...rest] = timeString.split(' ');
 
-      const dayTranslations: { [key: string]: string } = {
-        mon: "Thứ 2",
-        tue: "Thứ 3",
-        wed: "Thứ 4",
-        thu: "Thứ 5",
-        fri: "Thứ 6",
-        sat: "Thứ 7",
-        sun: "Chủ nhật",
+  // Xử lý customPerDay với format mới
+  if (type === 'customPerDay') {
+    const ranges = rest.join(' ').split('|').map(segment => {
+      const [timeRange, day] = segment.trim().split(' ');
+      const [start, end] = timeRange.split('_');
+      const [startHour, startMinute] = start.split(':').map(Number);
+      const [endHour, endMinute] = end.split(':').map(Number);
+
+      return {
+        day: day.toLowerCase(),
+        startHour,
+        startMinute,
+        endHour,
+        endMinute
       };
+    });
 
-      const daysArray = days.split("_").map((day) => {
-        const lowercaseDay = day.toLowerCase();
-        return dayTranslations[lowercaseDay] || day;
-      });
+    return { type, timeRanges: ranges };
+  } else {
+    const [hours, days] = rest;
+    const [start, end] = hours.split('_');
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
 
-      return (
-        <div className="space-y-1">
+    const daysArray = days.split('_');
+    const ranges = daysArray.map(day => ({
+      day,
+      startHour,
+      startMinute,
+      endHour,
+      endMinute
+    }));
+
+    return { type, timeRanges: ranges };
+
+  }
+
+  return { type, timeRanges: [] };
+};
+
+const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
+  const { type, timeRanges } = parseTimeRange(timeString);
+
+  const dayTranslations: Record<string, string> = {
+    '2': 'Thứ Hai',
+    '3': 'Thứ Ba',
+    '4': 'Thứ Tư',
+    '5': 'Thứ Năm',
+    '6': 'Thứ Sáu',
+    '7': 'Thứ Bảy',
+    '8': 'Chủ Nhật',
+    'mon': 'Thứ Hai',
+    'tue': 'Thứ Ba',
+    'wed': 'Thứ Tư',
+    'thu': 'Thứ Năm',
+    'fri': 'Thứ Sáu',
+    'sat': 'Thứ Bảy',
+    'sun': 'Chủ Nhật'
+  };
+
+  // Group timeRanges by same time
+  const groupedRanges = timeRanges.reduce((acc, curr) => {
+    const key = `${String(curr.startHour).padStart(2, '0')}:${String(curr.startMinute).padStart(2, '0')}-${String(curr.endHour).padStart(2, '0')}:${String(curr.endMinute).padStart(2, '0')}`;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(curr.day);
+    return acc;
+  }, {} as Record<string, string[]>);
+
+  return (
+    <div className="space-y-3">
+      {Object.entries(groupedRanges).map(([timeRange, days], index) => (
+        <div 
+          key={index} 
+          className="bg-orange-50 rounded-lg space-y-2"
+        >
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Từ {startTime} đến {endTime}
+            <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-orange-100 text-orange-800">
+              {timeRange}
             </span>
           </div>
-          <div className="flex flex-wrap gap-1">
-            {daysArray.map((day, index) => (
+          <div className="flex flex-wrap gap-1.5">
+            {days.map((day, idx) => (
               <span
-                key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                key={idx}
+                className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white text-gray-700 border border-gray-200"
               >
-                {day}
+                {dayTranslations[day.toLowerCase()] || day}
               </span>
             ))}
           </div>
         </div>
-      );
-    } catch (error) {
-      return "Không xác định";
-    }
-  };
+      ))}
+    </div>
+  );
+};
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

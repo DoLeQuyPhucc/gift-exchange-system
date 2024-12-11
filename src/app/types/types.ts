@@ -113,3 +113,11 @@ export interface Report {
   reportReasons: string;
   createdAt: string;
 }
+
+export interface TimeRange {
+  day: string;
+  startHour: number;
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+}
