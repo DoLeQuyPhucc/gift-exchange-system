@@ -680,7 +680,7 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                             DANH MỤC MUỐN ĐỔI
                           </p>
                           <p className="mt-1 text-orange-600 font-medium">
-                            {selectedProduct.desiredCategory?.name}
+                            {selectedProduct.desiredCategory !== null ? selectedProduct.desiredCategory?.name : "Không có danh mục muốn đổi"}
                           </p>
                         </div>
                       )}
@@ -719,6 +719,8 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          { selectedProduct.status !== "Pending" && (
+                            <>
                           <Calendar className="w-4 h-4 text-orange-500" />
                           <div>
                             <p className="text-xs text-gray-500">Hết hạn</p>
@@ -726,6 +728,8 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                               {formatDate(selectedProduct.expiresAt)}
                             </p>
                           </div>
+                            </>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -748,7 +752,7 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                       <img
                         src={selectedProduct.profilePicture}
                         alt={selectedProduct.owner_Name}
-                        className="w-12 h-12 rounded-full border-2 border-white shadow-lg"
+                        className="w-12 rounded-full object-cover"
                       />
                       <div>
                         <p className="text-sm text-gray-500">Chủ sở hữu</p>
