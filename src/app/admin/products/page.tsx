@@ -272,6 +272,36 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                   Đã duyệt: {statusCounts.approved || 0}
                 </button>
                 <button
+                  onClick={() => setFilterStatus("in_transaction")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "in_transaction"
+                      ? "bg-blue-500 text-white"
+                      : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  }`}
+                >
+                  Đang trao đổi: {statusCounts.in_transaction || 0}
+                </button>
+                <button
+                  onClick={() => setFilterStatus("exchanged")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "exchanged"
+                      ? "bg-purple-500 text-white"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  }`}
+                >
+                  Đã trao đổi: {statusCounts.exchanged || 0}
+                </button>
+                <button
+                  onClick={() => setFilterStatus("out_of_date")}
+                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
+                    filterStatus === "out_of_date"
+                      ? "bg-gray-500 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Hết hạn: {statusCounts.out_of_date || 0}
+                </button>
+                <button
                   onClick={() => setFilterStatus("rejected")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
                     filterStatus === "rejected"
@@ -340,32 +370,57 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
-                            ${
-                              product.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : product.status === "Approved"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full
-                            ${
-                              product.status === "Pending"
-                                ? "bg-yellow-500"
-                                : product.status === "Approved"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                          />
-                          {product.status === "Pending"
-                            ? "Đang chờ duyệt"
-                            : product.status === "Approved"
-                            ? "Được duyệt"
-                            : product.status}
-                        </span>
+                      <span
+  className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
+    ${
+      product.status.toLowerCase() === "pending"
+        ? "bg-yellow-100 text-yellow-700"
+        : product.status.toLowerCase() === "approved"
+        ? "bg-green-100 text-green-700"
+        : product.status.toLowerCase() === "in_transaction"
+        ? "bg-blue-100 text-blue-700"
+        : product.status.toLowerCase() === "exchanged"
+        ? "bg-purple-100 text-purple-700"
+        : product.status.toLowerCase() === "out_of_date"
+        ? "bg-gray-100 text-gray-700"
+        : product.status.toLowerCase() === "rejected"
+        ? "bg-red-100 text-red-700"
+        : "bg-gray-100 text-gray-700"
+    }`}
+>
+  <span
+    className={`w-1.5 h-1.5 rounded-full
+      ${
+        product.status.toLowerCase() === "pending"
+          ? "bg-yellow-500"
+          : product.status.toLowerCase() === "approved"
+          ? "bg-green-500"
+          : product.status.toLowerCase() === "in_transaction"
+          ? "bg-blue-500"
+          : product.status.toLowerCase() === "exchanged"
+          ? "bg-purple-500"
+          : product.status.toLowerCase() === "out_of_date"
+          ? "bg-gray-500"
+          : product.status.toLowerCase() === "rejected"
+          ? "bg-red-500"
+          : "bg-gray-500"
+      }`}
+  />
+  {product.status.toLowerCase() === "pending"
+    ? "Đang chờ duyệt"
+    : product.status.toLowerCase() === "approved"
+    ? "Được duyệt"
+    : product.status.toLowerCase() === "in_transaction"
+    ? "Đang trao đổi"
+    : product.status.toLowerCase() === "exchanged"
+    ? "Đã trao đổi"
+    : product.status.toLowerCase() === "out_of_date"
+    ? "Hết hạn"
+    : product.status.toLowerCase() === "rejected"
+    ? "Đã từ chối"
+    : product.status.toLowerCase()}
+</span>
+
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
