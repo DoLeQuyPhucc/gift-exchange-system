@@ -114,10 +114,28 @@ const AdminReportsPage = () => {
                           {report.id.slice(0, 8)}...
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {report.reporterName}
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={report.reporter.image}
+                              alt={report.reporter.name}
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                              <h3 className="font-medium text-gray-900">
+                                {report.reporter.name}
+                              </h3>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {report.reportedName}
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={report.reported.image}
+                              alt={report.reported.name}
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                              <h3 className="font-medium text-gray-900">
+                                {report.reported.name}
+                              </h3>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {report.reportReasons}

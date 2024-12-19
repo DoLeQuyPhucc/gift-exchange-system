@@ -35,6 +35,15 @@ const ProductDashboard: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
 
+  const sortOrder = [
+    "pending",
+    "approved",
+    "in_transaction",
+    "exchanged",
+    "rejected",
+    "out_of_date",
+  ];
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -42,11 +51,22 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         const sortedProducts = response.data.data.sort(
           (a: Product, b: Product) => {
-            if (a.status === "Pending" && b.status !== "Pending") return -1;
-            if (a.status !== "Pending" && b.status === "Pending") return 1;
-            return (
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
+            const statusA = a.status.toLowerCase();
+            const statusB = b.status.toLowerCase();
+            const statusComparison = sortOrder.indexOf(statusA) - sortOrder.indexOf(statusB);
+        
+            if (statusComparison !== 0) {
+              return statusComparison;
+            }
+        
+            // If statuses are the same, sort by createdAt
+            const createdAtComparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            if (createdAtComparison !== 0) {
+              return createdAtComparison;
+            }
+        
+            // If createdAt dates are the same, sort by expiresAt
+            return new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
           }
         );
         setProducts(sortedProducts);
@@ -120,112 +140,117 @@ const ProductDashboard: React.FC = () => {
     if (!timeString) return "Không xác định";
     return formatTimeRangeDisplay(timeString);
   };
-  
-const parseTimeRange = (timeString: string): {
-  type: string;
-  timeRanges: TimeRange[];
-} => {
-  if (!timeString) return { type: '', timeRanges: [] };
 
-  const [type, ...rest] = timeString.split(' ');
+  const parseTimeRange = (
+    timeString: string
+  ): {
+    type: string;
+    timeRanges: TimeRange[];
+  } => {
+    if (!timeString) return { type: "", timeRanges: [] };
 
-  // Xử lý customPerDay với format mới
-  if (type === 'customPerDay') {
-    const ranges = rest.join(' ').split('|').map(segment => {
-      const [timeRange, day] = segment.trim().split(' ');
-      const [start, end] = timeRange.split('_');
-      const [startHour, startMinute] = start.split(':').map(Number);
-      const [endHour, endMinute] = end.split(':').map(Number);
+    const [type, ...rest] = timeString.split(" ");
 
-      return {
-        day: day.toLowerCase(),
+    // Xử lý customPerDay với format mới
+    if (type === "customPerDay") {
+      const ranges = rest
+        .join(" ")
+        .split("|")
+        .map((segment) => {
+          const [timeRange, day] = segment.trim().split(" ");
+          const [start, end] = timeRange.split("_");
+          const [startHour, startMinute] = start.split(":").map(Number);
+          const [endHour, endMinute] = end.split(":").map(Number);
+
+          return {
+            day: day.toLowerCase(),
+            startHour,
+            startMinute,
+            endHour,
+            endMinute,
+          };
+        });
+
+      return { type, timeRanges: ranges };
+    } else {
+      const [hours, days] = rest;
+      const [start, end] = hours.split("_");
+      const [startHour, startMinute] = start.split(":").map(Number);
+      const [endHour, endMinute] = end.split(":").map(Number);
+
+      const daysArray = days.split("_");
+      const ranges = daysArray.map((day) => ({
+        day,
         startHour,
         startMinute,
         endHour,
-        endMinute
-      };
-    });
+        endMinute,
+      }));
 
-    return { type, timeRanges: ranges };
-  } else {
-    const [hours, days] = rest;
-    const [start, end] = hours.split('_');
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
+      return { type, timeRanges: ranges };
+    }
 
-    const daysArray = days.split('_');
-    const ranges = daysArray.map(day => ({
-      day,
-      startHour,
-      startMinute,
-      endHour,
-      endMinute
-    }));
-
-    return { type, timeRanges: ranges };
-
-  }
-
-  return { type, timeRanges: [] };
-};
-
-const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
-  const { type, timeRanges } = parseTimeRange(timeString);
-
-  const dayTranslations: Record<string, string> = {
-    '2': 'Thứ Hai',
-    '3': 'Thứ Ba',
-    '4': 'Thứ Tư',
-    '5': 'Thứ Năm',
-    '6': 'Thứ Sáu',
-    '7': 'Thứ Bảy',
-    '8': 'Chủ Nhật',
-    'mon': 'Thứ Hai',
-    'tue': 'Thứ Ba',
-    'wed': 'Thứ Tư',
-    'thu': 'Thứ Năm',
-    'fri': 'Thứ Sáu',
-    'sat': 'Thứ Bảy',
-    'sun': 'Chủ Nhật'
+    return { type, timeRanges: [] };
   };
 
-  // Group timeRanges by same time
-  const groupedRanges = timeRanges.reduce((acc, curr) => {
-    const key = `${String(curr.startHour).padStart(2, '0')}:${String(curr.startMinute).padStart(2, '0')}-${String(curr.endHour).padStart(2, '0')}:${String(curr.endMinute).padStart(2, '0')}`;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(curr.day);
-    return acc;
-  }, {} as Record<string, string[]>);
+  const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
+    const { type, timeRanges } = parseTimeRange(timeString);
 
-  return (
-    <div className="space-y-3">
-      {Object.entries(groupedRanges).map(([timeRange, days], index) => (
-        <div 
-          key={index} 
-          className="bg-orange-50 rounded-lg space-y-2"
-        >
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-orange-100 text-orange-800">
-              {timeRange}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {days.map((day, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white text-gray-700 border border-gray-200"
-              >
-                {dayTranslations[day.toLowerCase()] || day}
+    const dayTranslations: Record<string, string> = {
+      "2": "Thứ Hai",
+      "3": "Thứ Ba",
+      "4": "Thứ Tư",
+      "5": "Thứ Năm",
+      "6": "Thứ Sáu",
+      "7": "Thứ Bảy",
+      "8": "Chủ Nhật",
+      mon: "Thứ Hai",
+      tue: "Thứ Ba",
+      wed: "Thứ Tư",
+      thu: "Thứ Năm",
+      fri: "Thứ Sáu",
+      sat: "Thứ Bảy",
+      sun: "Chủ Nhật",
+    };
+
+    // Group timeRanges by same time
+    const groupedRanges = timeRanges.reduce((acc, curr) => {
+      const key = `${String(curr.startHour).padStart(2, "0")}:${String(
+        curr.startMinute
+      ).padStart(2, "0")}-${String(curr.endHour).padStart(2, "0")}:${String(
+        curr.endMinute
+      ).padStart(2, "0")}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(curr.day);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    return (
+      <div className="space-y-3">
+        {Object.entries(groupedRanges).map(([timeRange, days], index) => (
+          <div key={index} className="bg-orange-50 rounded-lg space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-orange-100 text-orange-800">
+                {timeRange}
               </span>
-            ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {days.map((day, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white text-gray-700 border border-gray-200"
+                >
+                  {dayTranslations[day.toLowerCase()] || day}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
-};
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -339,6 +364,9 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                       Sản phẩm
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-orange-700">
+                      Ngày tạo
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-orange-700">
                       Trạng thái
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-orange-700">
@@ -370,8 +398,13 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                      <span
-  className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
+                        <p className="text-sm text-gray-500">
+                          {formatDate(product.createdAt)}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
     ${
       product.status.toLowerCase() === "pending"
         ? "bg-yellow-100 text-yellow-700"
@@ -387,9 +420,9 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
         ? "bg-red-100 text-red-700"
         : "bg-gray-100 text-gray-700"
     }`}
->
-  <span
-    className={`w-1.5 h-1.5 rounded-full
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full
       ${
         product.status.toLowerCase() === "pending"
           ? "bg-yellow-500"
@@ -405,22 +438,21 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
           ? "bg-red-500"
           : "bg-gray-500"
       }`}
-  />
-  {product.status.toLowerCase() === "pending"
-    ? "Đang chờ duyệt"
-    : product.status.toLowerCase() === "approved"
-    ? "Được duyệt"
-    : product.status.toLowerCase() === "in_transaction"
-    ? "Đang trao đổi"
-    : product.status.toLowerCase() === "exchanged"
-    ? "Đã trao đổi"
-    : product.status.toLowerCase() === "out_of_date"
-    ? "Hết hạn"
-    : product.status.toLowerCase() === "rejected"
-    ? "Đã từ chối"
-    : product.status.toLowerCase()}
-</span>
-
+                          />
+                          {product.status.toLowerCase() === "pending"
+                            ? "Đang chờ duyệt"
+                            : product.status.toLowerCase() === "approved"
+                            ? "Được duyệt"
+                            : product.status.toLowerCase() === "in_transaction"
+                            ? "Đang trao đổi"
+                            : product.status.toLowerCase() === "exchanged"
+                            ? "Đã trao đổi"
+                            : product.status.toLowerCase() === "out_of_date"
+                            ? "Hết hạn"
+                            : product.status.toLowerCase() === "rejected"
+                            ? "Đã từ chối"
+                            : product.status.toLowerCase()}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -680,7 +712,9 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                             DANH MỤC MUỐN ĐỔI
                           </p>
                           <p className="mt-1 text-orange-600 font-medium">
-                            {selectedProduct.desiredCategory !== null ? selectedProduct.desiredCategory?.name : "Không có danh mục muốn đổi"}
+                            {selectedProduct.desiredCategory !== null
+                              ? selectedProduct.desiredCategory?.name
+                              : "Không có danh mục muốn đổi"}
                           </p>
                         </div>
                       )}
@@ -719,17 +753,17 @@ const formatTimeRangeDisplay = (timeString: string): JSX.Element => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          { selectedProduct.status !== "Pending" && (
+                          {selectedProduct.status !== "Pending" && (
                             <>
-                          <Calendar className="w-4 h-4 text-orange-500" />
-                          <div>
-                            <p className="text-xs text-gray-500">Hết hạn</p>
-                            <p className="text-sm font-medium">
-                              {formatDate(selectedProduct.expiresAt)}
-                            </p>
-                          </div>
+                              <Calendar className="w-4 h-4 text-orange-500" />
+                              <div>
+                                <p className="text-xs text-gray-500">Hết hạn</p>
+                                <p className="text-sm font-medium">
+                                  {formatDate(selectedProduct.expiresAt)}
+                                </p>
+                              </div>
                             </>
-                            )}
+                          )}
                         </div>
                       </div>
                     </div>

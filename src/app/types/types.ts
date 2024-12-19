@@ -108,10 +108,34 @@ export interface AttributeValue {
 
 export interface Report {
   id: string;
-  reporterName: string;
-  reportedName: string;
-  reportReasons: string;
+  charitarianItem: {
+    itemId: string;
+    itemName: string;
+    itemImages: string[];
+    itemQuantity: number;
+    itemVideo: string | null;
+  };
   createdAt: string;
+  reportReasons: string;
+  reported: {
+    id: string;
+    name: string;
+    image: string;
+  };
+  reporter: {
+    id: string;
+    name: string;
+    image: string;
+  };
+  requesterItem: {
+    itemId: string;
+    itemName: string;
+    itemImages: string[];
+    itemQuantity: number;
+    itemVideo: string | null;
+  } | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  transactionId: string;
 }
 
 export interface TimeRange {
