@@ -53,20 +53,24 @@ const ProductDashboard: React.FC = () => {
           (a: Product, b: Product) => {
             const statusA = a.status.toLowerCase();
             const statusB = b.status.toLowerCase();
-            const statusComparison = sortOrder.indexOf(statusA) - sortOrder.indexOf(statusB);
-        
+            const statusComparison =
+              sortOrder.indexOf(statusA) - sortOrder.indexOf(statusB);
+
             if (statusComparison !== 0) {
               return statusComparison;
             }
-        
+
             // If statuses are the same, sort by createdAt
-            const createdAtComparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            const createdAtComparison =
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
             if (createdAtComparison !== 0) {
               return createdAtComparison;
             }
-        
+
             // If createdAt dates are the same, sort by expiresAt
-            return new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
+            return (
+              new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime()
+            );
           }
         );
         setProducts(sortedProducts);
@@ -90,6 +94,7 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         await fetchProducts();
         toast.success("Product approved successfully");
+        await axiosInstance.post(`notification/send?userId=${product.owner_id}&type=${'Approved Item'}&data=${'Sản phẩm của bạn đã được duyệt.'}`)
       } else {
         toast.error(response.data.message);
       }
@@ -104,6 +109,7 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         await fetchProducts();
         toast.success("Product rejected successfully");
+        await axiosInstance.post(`notification/send?userId=${product.owner_id}&type=${'Rejected Item'}&data=${'Sản phẩm của bạn đã bị từ chối.'}`)
       } else {
         toast.error(response.data.message);
       }
@@ -640,30 +646,56 @@ const ProductDashboard: React.FC = () => {
                     {/* Status Badge */}
                     <div>
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-                      ${
-                        selectedProduct.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : selectedProduct.status === "Approved"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                        className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
+    ${
+      selectedProduct.status.toLowerCase() === "pending"
+        ? "bg-yellow-100 text-yellow-700"
+        : selectedProduct.status.toLowerCase() === "approved"
+        ? "bg-green-100 text-green-700"
+        : selectedProduct.status.toLowerCase() === "in_transaction"
+        ? "bg-blue-100 text-blue-700"
+        : selectedProduct.status.toLowerCase() === "exchanged"
+        ? "bg-purple-100 text-purple-700"
+        : selectedProduct.status.toLowerCase() === "out_of_date"
+        ? "bg-gray-100 text-gray-700"
+        : selectedProduct.status.toLowerCase() === "rejected"
+        ? "bg-red-100 text-red-700"
+        : "bg-gray-100 text-gray-700"
+    }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full
-                        ${
-                          selectedProduct.status === "Pending"
-                            ? "bg-yellow-500"
-                            : selectedProduct.status === "Approved"
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                        }`}
+      ${
+        selectedProduct.status.toLowerCase() === "pending"
+          ? "bg-yellow-500"
+          : selectedProduct.status.toLowerCase() === "approved"
+          ? "bg-green-500"
+          : selectedProduct.status.toLowerCase() === "in_transaction"
+          ? "bg-blue-500"
+          : selectedProduct.status.toLowerCase() === "exchanged"
+          ? "bg-purple-500"
+          : selectedProduct.status.toLowerCase() === "out_of_date"
+          ? "bg-gray-500"
+          : selectedProduct.status.toLowerCase() === "rejected"
+          ? "bg-red-500"
+          : "bg-gray-500"
+      }`}
                         />
-                        {selectedProduct.status === "Pending"
+                        {selectedProduct.status.toLowerCase() === "pending"
                           ? "Đang chờ duyệt"
-                          : selectedProduct.status === "Approved"
+                          : selectedProduct.status.toLowerCase() === "approved"
                           ? "Được duyệt"
-                          : selectedProduct.status}
+                          : selectedProduct.status.toLowerCase() ===
+                            "in_transaction"
+                          ? "Đang trao đổi"
+                          : selectedProduct.status.toLowerCase() === "exchanged"
+                          ? "Đã trao đổi"
+                          : selectedProduct.status.toLowerCase() ===
+                            "out_of_date"
+                          ? "Hết hạn"
+                          : selectedProduct.status.toLowerCase() === "rejected"
+                          ? "Đã từ chối"
+                          : selectedProduct.status.toLowerCase()}
                       </span>
                     </div>
 
