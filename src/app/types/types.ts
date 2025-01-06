@@ -30,6 +30,29 @@ export interface Product {
   address: Address;
   itemRequestTo: number;
   requestForItem: number;
+  checking: {
+    badWordsInName: string[];
+    badWordsInDescription: string[];
+    imageTags: {
+      [key: string]: Array<{
+        confidence: number;
+        tag: {
+          vi: string;
+        };
+      }>;
+    };
+  };
+  requester: User | null;
+  charitarian: User | null;
+  transactionRequestIdOfItem: string | null;
+  itemPendingRequestTo: number;
+  pendingRequestForItem: number;
+}
+
+interface User {
+  id: string;
+  name: string;
+  image: string;
 }
 
 interface Address {
@@ -108,6 +131,27 @@ export interface AttributeValue {
 
 export interface Report {
   id: string;
+  transactionId: string;
+  reporter: {
+    id: string;
+    name: string;
+    image: string;
+  };
+  reported: {
+    id: string;
+    name: string;
+    image: string;
+  };
+  reportReasons: ReportReason[];
+  createdAt: string;
+  status: "Pending" | "Approved" | "Rejected";
+  requesterItem: {
+    itemId: string;
+    itemName: string;
+    itemImages: string[];
+    itemQuantity: number;
+    itemVideo: string | null;
+  };
   charitarianItem: {
     itemId: string;
     itemName: string;
@@ -115,27 +159,6 @@ export interface Report {
     itemQuantity: number;
     itemVideo: string | null;
   };
-  createdAt: string;
-  reportReasons: string;
-  reported: {
-    id: string;
-    name: string;
-    image: string;
-  };
-  reporter: {
-    id: string;
-    name: string;
-    image: string;
-  };
-  requesterItem: {
-    itemId: string;
-    itemName: string;
-    itemImages: string[];
-    itemQuantity: number;
-    itemVideo: string | null;
-  } | null;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  transactionId: string;
 }
 
 export interface TimeRange {
@@ -144,4 +167,64 @@ export interface TimeRange {
   startMinute: number;
   endHour: number;
   endMinute: number;
+}
+
+export interface TransactionResponse {
+  isSuccess: boolean;
+  code: number;
+  data: Transaction[];
+  message: string;
+}
+
+export interface Transaction {
+  id: string;
+  status: string;
+  requestId: string;
+  requestNote: string;
+  requester: User;
+  requesterItem: TransactionItem;
+  charitarian: User;
+  charitarianItem: TransactionItem;
+  createdAt: string;
+  updateAt: string;
+  appointmentDate: string;
+  requesterAddress: Address;
+  requesterPhone: string;
+  charitarianAddress: Address;
+  charitarianPhone: string;
+  rejectMessage: string | null;
+  transactionImages: string[];
+}
+
+interface TransactionItem {
+  itemId: string;
+  itemName: string;
+  itemVideo: string | null;
+  itemImages: string[];
+  itemQuantity: number;
+}
+export interface ReportResponse {
+  isSuccess: boolean;
+  code: number;
+  data: ReportDetail;
+  message: string;
+}
+
+export interface ReportDetail {
+  id: string;
+  transactionId: string;
+  reporter: User;
+  reported: User;
+  reportReasons: ReportReason[];
+  createdAt: string;
+  status: string;
+  requesterItem: TransactionItem | null;
+  charitarianItem: TransactionItem | null;
+}
+
+interface ReportReason {
+  id: string;
+  parentId: string;
+  reason: string;
+  point: number;
 }

@@ -113,61 +113,92 @@ const AdminReportsPage = () => {
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {report.id.slice(0, 8)}...
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-4">
                             <img
                               src={report.reporter.image}
                               alt={report.reporter.name}
                               className="w-8 h-8 rounded-full object-cover"
                             />
+                            <div>
                               <h3 className="font-medium text-gray-900">
                                 {report.reporter.name}
                               </h3>
+                              <p className="text-sm text-gray-500">
+                                Người báo cáo
+                              </p>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-4">
                             <img
                               src={report.reported.image}
                               alt={report.reported.name}
                               className="w-8 h-8 rounded-full object-cover"
                             />
+                            <div>
                               <h3 className="font-medium text-gray-900">
                                 {report.reported.name}
                               </h3>
+                              <p className="text-sm text-gray-500">
+                                Người bị báo cáo
+                              </p>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {report.reportReasons}
+                        <td className="px-4 py-3">
+                          <div className="space-y-1">
+                            {report.reportReasons.map((reason) => (
+                              <div
+                                key={reason.id}
+                                className="text-sm text-gray-900"
+                              >
+                                • {reason.reason}
+                              </div>
+                            ))}
+                          </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatDate(report.createdAt)}
+                        <td className="px-4 py-3">
+                          <div className="space-y-2">
+                            <div className="text-sm">
+                              <p className="font-medium">
+                                Vật phẩm người yêu cầu:
+                              </p>
+                              <p>
+                                {report.requesterItem.itemName} (x
+                                {report.requesterItem.itemQuantity})
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <p className="font-medium">Vật phẩm từ thiện:</p>
+                              <p>
+                                {report.charitarianItem.itemName} (x
+                                {report.charitarianItem.itemQuantity})
+                              </p>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
+                          {formatDate(report.createdAt)}
+                        </td>
+                        <td className="px-4 py-3">
                           <div className="flex justify-center gap-2">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleApprove(report.id)}
-                                  className="p-2 text-green-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                >
-                                  <CheckCircle className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={() => handleReject(report.id)}
-                                  className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                >
-                                  <XCircle className="w-5 h-5" />
-                                </button>
-
-                                <button
-                                  onClick={() => {}}
-                                  className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  <Eye className="w-5 h-5" />
-                                </button>
-                              </div>
-                            </td>
+                            <button
+                              onClick={() => handleApprove(report.id)}
+                              className="p-2 text-green-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            >
+                              <CheckCircle className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleReject(report.id)}
+                              className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </button>
+                            <button className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                              <Eye className="w-5 h-5" />
+                            </button>
                           </div>
                         </td>
                       </tr>

@@ -14,6 +14,8 @@ import {
   Package2,
   Tag,
   MapPin,
+  FileText,
+  Flag,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,6 +26,8 @@ import {
 import axiosInstance from "@/app/api/axiosInstance";
 import { Product, TimeRange } from "@/app/types/types";
 import { formatDate } from "@/app/utils/format-date";
+import { TransactionDetailsDialog } from "@/app/components/transaction/transaction-detail";
+import { ReportDialog } from "@/app/components/report/report-detail";
 
 const ProductDashboard: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,14 +38,18 @@ const ProductDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] =
+    useState<string>("");
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const sortOrder = [
-    "pending",
-    "approved",
-    "in_transaction",
-    "exchanged",
-    "rejected",
-    "out_of_date",
+    "Pending",
+    "Approved",
+    "In_transaction",
+    "Exchanged",
+    "Rejected",
+    "Out_of_date",
   ];
 
   const fetchProducts = async () => {
@@ -51,8 +59,8 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         const sortedProducts = response.data.data.sort(
           (a: Product, b: Product) => {
-            const statusA = a.status.toLowerCase();
-            const statusB = b.status.toLowerCase();
+            const statusA = a.status;
+            const statusB = b.status;
             const statusComparison =
               sortOrder.indexOf(statusA) - sortOrder.indexOf(statusB);
 
@@ -94,7 +102,11 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         await fetchProducts();
         toast.success("Product approved successfully");
-        await axiosInstance.post(`notification/send?userId=${product.owner_id}&type=${'Approved Item'}&data=${'Sản phẩm của bạn đã được duyệt.'}`)
+        await axiosInstance.post(
+          `notification/send?userId=${
+            product.owner_id
+          }&type=${"Approved Item"}&data=${"Sản phẩm của bạn đã được duyệt."}`
+        );
       } else {
         toast.error(response.data.message);
       }
@@ -109,7 +121,11 @@ const ProductDashboard: React.FC = () => {
       if (response.data.isSuccess) {
         await fetchProducts();
         toast.success("Product rejected successfully");
-        await axiosInstance.post(`notification/send?userId=${product.owner_id}&type=${'Rejected Item'}&data=${'Sản phẩm của bạn đã bị từ chối.'}`)
+        await axiosInstance.post(
+          `notification/send?userId=${
+            product.owner_id
+          }&type=${"Rejected Item"}&data=${"Sản phẩm của bạn đã bị từ chối."}`
+        );
       } else {
         toast.error(response.data.message);
       }
@@ -121,13 +137,11 @@ const ProductDashboard: React.FC = () => {
   const filteredProducts = products
     .filter(
       (product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.name.includes(searchTerm) ||
+        product.category.name.includes(searchTerm)
     )
     .filter((product) =>
-      filterStatus === "all"
-        ? true
-        : product.status.toLowerCase() === filterStatus
+      filterStatus === "all" ? true : product.status === filterStatus
     );
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
@@ -137,7 +151,7 @@ const ProductDashboard: React.FC = () => {
   );
 
   const statusCounts = products.reduce((acc, product) => {
-    const status = product.status.toLowerCase();
+    const status = product.status;
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {} as { [key: string]: number });
@@ -169,7 +183,7 @@ const ProductDashboard: React.FC = () => {
           const [endHour, endMinute] = end.split(":").map(Number);
 
           return {
-            day: day.toLowerCase(),
+            day: day,
             startHour,
             startMinute,
             endHour,
@@ -248,7 +262,7 @@ const ProductDashboard: React.FC = () => {
                   key={idx}
                   className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white text-gray-700 border border-gray-200"
                 >
-                  {dayTranslations[day.toLowerCase()] || day}
+                  {dayTranslations[day] || day}
                 </span>
               ))}
             </div>
@@ -283,64 +297,64 @@ const ProductDashboard: React.FC = () => {
               {/* Filter */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => setFilterStatus("pending")}
+                  onClick={() => setFilterStatus("Pending")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "pending"
+                    filterStatus === "Pending"
                       ? "bg-yellow-500 text-white"
                       : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
                   }`}
                 >
-                  Đang chờ: {statusCounts.pending || 0}
+                  Đang chờ: {statusCounts.Pending || 0}
                 </button>
                 <button
-                  onClick={() => setFilterStatus("approved")}
+                  onClick={() => setFilterStatus("Approved")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "approved"
+                    filterStatus === "Approved"
                       ? "bg-green-500 text-white"
                       : "bg-green-100 text-green-700 hover:bg-green-200"
                   }`}
                 >
-                  Đã duyệt: {statusCounts.approved || 0}
+                  Đã duyệt: {statusCounts.Approved || 0}
                 </button>
                 <button
                   onClick={() => setFilterStatus("in_transaction")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "in_transaction"
+                    filterStatus === "In_transaction"
                       ? "bg-blue-500 text-white"
                       : "bg-blue-100 text-blue-700 hover:bg-blue-200"
                   }`}
                 >
-                  Đang trao đổi: {statusCounts.in_transaction || 0}
+                  Đang trao đổi: {statusCounts.In_transaction || 0}
                 </button>
                 <button
-                  onClick={() => setFilterStatus("exchanged")}
+                  onClick={() => setFilterStatus("Exchanged")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "exchanged"
+                    filterStatus === "Exchanged"
                       ? "bg-purple-500 text-white"
                       : "bg-purple-100 text-purple-700 hover:bg-purple-200"
                   }`}
                 >
-                  Đã trao đổi: {statusCounts.exchanged || 0}
+                  Đã trao đổi: {statusCounts.Exchanged || 0}
                 </button>
                 <button
-                  onClick={() => setFilterStatus("out_of_date")}
+                  onClick={() => setFilterStatus("Out_of_date")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "out_of_date"
+                    filterStatus === "Out_of_date"
                       ? "bg-gray-500 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Hết hạn: {statusCounts.out_of_date || 0}
+                  Hết hạn: {statusCounts.Out_of_date || 0}
                 </button>
                 <button
-                  onClick={() => setFilterStatus("rejected")}
+                  onClick={() => setFilterStatus("Rejected")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "rejected"
+                    filterStatus === "Rejected"
                       ? "bg-red-500 text-white"
                       : "bg-red-100 text-red-700 hover:bg-red-200"
                   }`}
                 >
-                  Đã từ chối: {statusCounts.rejected || 0}
+                  Đã từ chối: {statusCounts.Rejected || 0}
                 </button>
                 {filterStatus !== "all" && (
                   <button
@@ -412,17 +426,17 @@ const ProductDashboard: React.FC = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
     ${
-      product.status.toLowerCase() === "pending"
+      product.status === "Pending"
         ? "bg-yellow-100 text-yellow-700"
-        : product.status.toLowerCase() === "approved"
+        : product.status === "Approved"
         ? "bg-green-100 text-green-700"
-        : product.status.toLowerCase() === "in_transaction"
+        : product.status === "In_transaction"
         ? "bg-blue-100 text-blue-700"
-        : product.status.toLowerCase() === "exchanged"
+        : product.status === "Exchanged"
         ? "bg-purple-100 text-purple-700"
-        : product.status.toLowerCase() === "out_of_date"
+        : product.status === "Out_of_date"
         ? "bg-gray-100 text-gray-700"
-        : product.status.toLowerCase() === "rejected"
+        : product.status === "Rejected"
         ? "bg-red-100 text-red-700"
         : "bg-gray-100 text-gray-700"
     }`}
@@ -430,34 +444,34 @@ const ProductDashboard: React.FC = () => {
                           <span
                             className={`w-1.5 h-1.5 rounded-full
       ${
-        product.status.toLowerCase() === "pending"
+        product.status === "Pending"
           ? "bg-yellow-500"
-          : product.status.toLowerCase() === "approved"
+          : product.status === "Approved"
           ? "bg-green-500"
-          : product.status.toLowerCase() === "in_transaction"
+          : product.status === "In_transaction"
           ? "bg-blue-500"
-          : product.status.toLowerCase() === "exchanged"
+          : product.status === "Exchanged"
           ? "bg-purple-500"
-          : product.status.toLowerCase() === "out_of_date"
+          : product.status === "Out_of_date"
           ? "bg-gray-500"
-          : product.status.toLowerCase() === "rejected"
+          : product.status === "Rejected"
           ? "bg-red-500"
           : "bg-gray-500"
       }`}
                           />
-                          {product.status.toLowerCase() === "pending"
+                          {product.status === "Pending"
                             ? "Đang chờ duyệt"
-                            : product.status.toLowerCase() === "approved"
+                            : product.status === "Approved"
                             ? "Được duyệt"
-                            : product.status.toLowerCase() === "in_transaction"
+                            : product.status === "In_transaction"
                             ? "Đang trao đổi"
-                            : product.status.toLowerCase() === "exchanged"
+                            : product.status === "Exchanged"
                             ? "Đã trao đổi"
-                            : product.status.toLowerCase() === "out_of_date"
+                            : product.status === "Out_of_date"
                             ? "Hết hạn"
-                            : product.status.toLowerCase() === "rejected"
+                            : product.status === "Rejected"
                             ? "Đã từ chối"
-                            : product.status.toLowerCase()}
+                            : product.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -648,17 +662,17 @@ const ProductDashboard: React.FC = () => {
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1
     ${
-      selectedProduct.status.toLowerCase() === "pending"
+      selectedProduct.status === "Pending"
         ? "bg-yellow-100 text-yellow-700"
-        : selectedProduct.status.toLowerCase() === "approved"
+        : selectedProduct.status === "Approved"
         ? "bg-green-100 text-green-700"
-        : selectedProduct.status.toLowerCase() === "in_transaction"
+        : selectedProduct.status === "In_transaction"
         ? "bg-blue-100 text-blue-700"
-        : selectedProduct.status.toLowerCase() === "exchanged"
+        : selectedProduct.status === "Exchanged"
         ? "bg-purple-100 text-purple-700"
-        : selectedProduct.status.toLowerCase() === "out_of_date"
+        : selectedProduct.status === "Out_of_date"
         ? "bg-gray-100 text-gray-700"
-        : selectedProduct.status.toLowerCase() === "rejected"
+        : selectedProduct.status === "Rejected"
         ? "bg-red-100 text-red-700"
         : "bg-gray-100 text-gray-700"
     }`}
@@ -666,37 +680,74 @@ const ProductDashboard: React.FC = () => {
                         <span
                           className={`w-1.5 h-1.5 rounded-full
       ${
-        selectedProduct.status.toLowerCase() === "pending"
+        selectedProduct.status === "Pending"
           ? "bg-yellow-500"
-          : selectedProduct.status.toLowerCase() === "approved"
+          : selectedProduct.status === "Approved"
           ? "bg-green-500"
-          : selectedProduct.status.toLowerCase() === "in_transaction"
+          : selectedProduct.status === "In_transaction"
           ? "bg-blue-500"
-          : selectedProduct.status.toLowerCase() === "exchanged"
+          : selectedProduct.status === "Exchanged"
           ? "bg-purple-500"
-          : selectedProduct.status.toLowerCase() === "out_of_date"
+          : selectedProduct.status === "Out_of_date"
           ? "bg-gray-500"
-          : selectedProduct.status.toLowerCase() === "rejected"
+          : selectedProduct.status === "Rejected"
           ? "bg-red-500"
           : "bg-gray-500"
       }`}
                         />
-                        {selectedProduct.status.toLowerCase() === "pending"
+                        {selectedProduct.status === "Pending"
                           ? "Đang chờ duyệt"
-                          : selectedProduct.status.toLowerCase() === "approved"
+                          : selectedProduct.status === "Approved"
                           ? "Được duyệt"
-                          : selectedProduct.status.toLowerCase() ===
-                            "in_transaction"
+                          : selectedProduct.status === "In_transaction"
                           ? "Đang trao đổi"
-                          : selectedProduct.status.toLowerCase() === "exchanged"
+                          : selectedProduct.status === "Exchanged"
                           ? "Đã trao đổi"
-                          : selectedProduct.status.toLowerCase() ===
-                            "out_of_date"
+                          : selectedProduct.status === "Out_of_date"
                           ? "Hết hạn"
-                          : selectedProduct.status.toLowerCase() === "rejected"
+                          : selectedProduct.status === "Rejected"
                           ? "Đã từ chối"
-                          : selectedProduct.status.toLowerCase()}
+                          : selectedProduct.status}
                       </span>
+                    </div>
+
+                    {/* Transaction Participants */}
+                    <div className="space-y-4 mb-6">
+                      {selectedProduct.charitarian && (
+                        <div className="p-4 bg-blue-50 rounded-lg flex items-center gap-4">
+                          <img
+                            src={selectedProduct.charitarian.image}
+                            alt={selectedProduct.charitarian.name}
+                            className="w-12 h-12 rounded-full border-2 border-blue-200"
+                          />
+                          <div>
+                            <p className="text-sm text-blue-600 font-medium">
+                              Người cho
+                            </p>
+                            <p className="font-semibold">
+                              {selectedProduct.charitarian.name}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedProduct.requester && (
+                        <div className="p-4 bg-green-50 rounded-lg flex items-center gap-4">
+                          <img
+                            src={selectedProduct.requester.image}
+                            alt={selectedProduct.requester.name}
+                            className="w-12 h-12 rounded-full border-2 border-green-200"
+                          />
+                          <div>
+                            <p className="text-sm text-green-600 font-medium">
+                              Người nhận
+                            </p>
+                            <p className="font-semibold">
+                              {selectedProduct.requester.name}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Info Grid */}
@@ -828,33 +879,64 @@ const ProductDashboard: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    {selectedProduct.status === "Pending" && (
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => {
-                            handleApprove(selectedProduct);
-                            setIsModalOpen(false);
-                          }}
-                          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg
-                                transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                          Duyệt
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleReject(selectedProduct);
-                            setIsModalOpen(false);
-                          }}
-                          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg
-                                transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <XCircle className="w-5 h-5" />
-                          Từ chối
-                        </button>
-                      </div>
-                    )}
+                    {/* Sticky Action Buttons */}
+                    <div className="sticky bottom-0 bg-white pt-4 border-t">
+                      {selectedProduct.status === "Pending" ? (
+                        <div className="flex gap-4">
+                          <button
+                            onClick={() => {
+                              handleApprove(selectedProduct);
+                              setIsModalOpen(false);
+                            }}
+                            className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg
+            transition-colors duration-200 flex items-center justify-center gap-2"
+                          >
+                            <CheckCircle className="w-5 h-5" />
+                            Duyệt
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleReject(selectedProduct);
+                              setIsModalOpen(false);
+                            }}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg
+            transition-colors duration-200 flex items-center justify-center gap-2"
+                          >
+                            <XCircle className="w-5 h-5" />
+                            Từ chối
+                          </button>
+                        </div>
+                      ) : selectedProduct.status === "Exchanged" ? (
+                        <div className="flex gap-4">
+                          <button
+                            onClick={() => {
+                              setSelectedTransactionId(
+                                selectedProduct.transactionRequestIdOfItem || ""
+                              );
+                              setIsTransactionModalOpen(true);
+                            }}
+                            className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+            transition-colors flex items-center justify-center gap-2"
+                          >
+                            <FileText className="w-5 h-5" />
+                            Chi tiết giao dịch
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedTransactionId(
+                                selectedProduct.transactionRequestIdOfItem || ""
+                              );
+                              setIsReportModalOpen(true);
+                            }}
+                            className="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 
+            transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Flag className="w-5 h-5" />
+                            Chi tiết báo cáo
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               )}
@@ -862,6 +944,18 @@ const ProductDashboard: React.FC = () => {
           </Dialog>
         </div>
       </div>
+
+      <TransactionDetailsDialog
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        transactionId={selectedTransactionId}
+      />
+
+      <ReportDialog
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        transactionId={selectedTransactionId}
+      />
     </div>
   );
 };
