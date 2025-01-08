@@ -14,8 +14,8 @@ import { ApiResponse, Product, ProductAttribute } from "@/app/types/types";
 export default function ProductDetailPage() {
   // Lấy itemId từ dynamic route parameter
   const params = useParams();
-  const itemId = Array.isArray(params?.id) ? params.id[0] : params?.id;  
-  
+  const itemId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +30,10 @@ export default function ProductDetailPage() {
 
       try {
         setLoading(true);
-        const response = await axiosInstance.get<ApiResponse>(`/items/${itemId}`);
-        
+        const response = await axiosInstance.get<ApiResponse>(
+          `/items/${itemId}`
+        );
+
         if (response.data.isSuccess && response.data.data) {
           setProduct(response.data.data);
         } else {
@@ -95,7 +97,7 @@ export default function ProductDetailPage() {
     const data = {
       itemId: product.id,
       quantity: 1,
-    }
+    };
 
     const response = await axiosInstance.post("/request/create", data);
 
@@ -108,13 +110,13 @@ export default function ProductDetailPage() {
   };
 
   // Thêm phần hiển thị thuộc tính sản phẩm
-  const renderAttributes = () => {
-    return product.itemAttributeValues.map((attr) => (
-      <div key={attr.id} className="flex items-center gap-2 text-gray-600">
-        <span>- {attr.value}</span>
-      </div>
-    ));
-  };
+  // const renderAttributes = () => {
+  //   return product.itemAttributeValues.map((attr) => (
+  //     <div key={attr.id} className="flex items-center gap-2 text-gray-600">
+  //       <span>- {attr.value}</span>
+  //     </div>
+  //   ));
+  // };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -136,7 +138,7 @@ export default function ProductDetailPage() {
           </h1>
 
           <div className="flex gap-2 mb-6">
-            <Badge className="bg-orange-500">{product.category}</Badge>
+            {/* <Badge className="bg-orange-500">{product.category}</Badge> */}
             <Badge variant="outline">{product.condition}</Badge>
             {product.available ? (
               <Badge variant="default">Còn hàng</Badge>
@@ -160,12 +162,12 @@ export default function ProductDetailPage() {
               <RefreshCcw size={20} />
               <span>Tình trạng: {product.condition}</span>
             </div>
-            
+
             {/* Product Attributes */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <h3 className="font-medium text-gray-800">Thông số kỹ thuật:</h3>
               {renderAttributes()}
-            </div>
+            </div> */}
           </div>
 
           {product.available ? (
@@ -174,8 +176,8 @@ export default function ProductDetailPage() {
                 <Button className="w-1/2 bg-orange-500 hover:bg-orange-600 text-white">
                   Liên hệ
                 </Button>
-                <Button 
-                  className="w-1/2 bg-amber-500 hover:bg-amber-600 text-white" 
+                <Button
+                  className="w-1/2 bg-amber-500 hover:bg-amber-600 text-white"
                   onClick={handleAddToCart}
                 >
                   Thêm vào giỏ hàng
