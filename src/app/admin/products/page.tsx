@@ -16,6 +16,7 @@ import {
   MapPin,
   FileText,
   Flag,
+  RotateCw,
 } from "lucide-react";
 import {
   Dialog,
@@ -28,6 +29,7 @@ import { Product, TimeRange } from "@/app/types/types";
 import { formatDate } from "@/app/utils/format-date";
 import { TransactionDetailsDialog } from "@/app/components/transaction/transaction-detail";
 import { ReportDialog } from "@/app/components/report/report-detail";
+import RejectDialog from "@/app/components/reject/reject-modal";
 
 const ProductDashboard: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -42,15 +44,30 @@ const ProductDashboard: React.FC = () => {
   const [selectedTransactionId, setSelectedTransactionId] =
     useState<string>("");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [productToReject, setProductToReject] = useState<Product | null>(null);
 
   const sortOrder = [
     "Pending",
     "Approved",
-    "In_transaction",
+    "In_Transaction",
     "Exchanged",
     "Rejected",
     "Out_of_date",
   ];
+
+  const handleReload = async () => {
+    setIsLoading(true);
+    try {
+      await fetchProducts();
+      toast.success("Products reloaded successfully");
+    } catch (error) {
+      toast.error("Failed to reload products");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -115,15 +132,23 @@ const ProductDashboard: React.FC = () => {
     }
   };
 
-  const handleReject = async (product: Product) => {
+  const handleReject = async (rejectMessage: string) => {
+    if (!productToReject) return;
+
     try {
-      const response = await axiosInstance.post(`items/reject/${product.id}`);
+      const response = await axiosInstance.post(
+        `items/reject/${productToReject.id}`,
+        {
+          reject_message: rejectMessage,
+        }
+      );
+
       if (response.data.isSuccess) {
         await fetchProducts();
         toast.success("Product rejected successfully");
         await axiosInstance.post(
           `notification/send?userId=${
-            product.owner_id
+            productToReject.owner_id
           }&type=${"Rejected Item"}&data=${"Sản phẩm của bạn đã bị từ chối."}`
         );
       } else {
@@ -131,6 +156,7 @@ const ProductDashboard: React.FC = () => {
       }
     } catch (error) {
       toast.error("Failed to reject product");
+      console.log(error);
     }
   };
 
@@ -283,14 +309,13 @@ const ProductDashboard: React.FC = () => {
             </h1>
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <div className="relative flex-1">
                 <input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full md:w-64 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="pl-10 py-2 w-full md:w-64 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
@@ -317,14 +342,14 @@ const ProductDashboard: React.FC = () => {
                   Đã duyệt: {statusCounts.Approved || 0}
                 </button>
                 <button
-                  onClick={() => setFilterStatus("in_transaction")}
+                  onClick={() => setFilterStatus("In_Transaction")}
                   className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "In_transaction"
+                    filterStatus === "In_Transaction"
                       ? "bg-blue-500 text-white"
                       : "bg-blue-100 text-blue-700 hover:bg-blue-200"
                   }`}
                 >
-                  Đang trao đổi: {statusCounts.In_transaction || 0}
+                  Đang trao đổi: {statusCounts.In_Transaction || 0}
                 </button>
                 <button
                   onClick={() => setFilterStatus("Exchanged")}
@@ -364,6 +389,16 @@ const ProductDashboard: React.FC = () => {
                     Xóa bộ lọc
                   </button>
                 )}
+
+                <button
+                  onClick={handleReload}
+                  className={`p-2 rounded-full hover:bg-gray-100 transition-all ${
+                    isLoading ? "animate-spin" : ""
+                  }`}
+                  title="Reload products"
+                >
+                  <RotateCw size={20} />
+                </button>
               </div>
             </div>
           </div>
@@ -430,7 +465,7 @@ const ProductDashboard: React.FC = () => {
         ? "bg-yellow-100 text-yellow-700"
         : product.status === "Approved"
         ? "bg-green-100 text-green-700"
-        : product.status === "In_transaction"
+        : product.status === "In_Transaction"
         ? "bg-blue-100 text-blue-700"
         : product.status === "Exchanged"
         ? "bg-purple-100 text-purple-700"
@@ -448,7 +483,7 @@ const ProductDashboard: React.FC = () => {
           ? "bg-yellow-500"
           : product.status === "Approved"
           ? "bg-green-500"
-          : product.status === "In_transaction"
+          : product.status === "In_Transaction"
           ? "bg-blue-500"
           : product.status === "Exchanged"
           ? "bg-purple-500"
@@ -463,7 +498,7 @@ const ProductDashboard: React.FC = () => {
                             ? "Đang chờ duyệt"
                             : product.status === "Approved"
                             ? "Được duyệt"
-                            : product.status === "In_transaction"
+                            : product.status === "In_Transaction"
                             ? "Đang trao đổi"
                             : product.status === "Exchanged"
                             ? "Đã trao đổi"
@@ -494,7 +529,10 @@ const ProductDashboard: React.FC = () => {
                                 <CheckCircle className="w-5 h-5" />
                               </button>
                               <button
-                                onClick={() => handleReject(product)}
+                                onClick={() => {
+                                  setProductToReject(product);
+                                  setIsRejectDialogOpen(true);
+                                }}
                                 className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               >
                                 <XCircle className="w-5 h-5" />
@@ -657,6 +695,56 @@ const ProductDashboard: React.FC = () => {
                       </p>
                     </div>
 
+                    {/* Checking Information */}
+                    {selectedProduct.checking && (
+                      <div className="space-y-4 mb-6">
+                        <div className="font-medium text-gray-700">
+                          Thông tin kiểm duyệt
+                        </div>
+
+                        {/* Bad Words Section */}
+                        {selectedProduct.checking.badWordsInName.length > 0 ||
+                        selectedProduct.checking.badWordsInDescription.length >
+                          0 ? (
+                          <div className="bg-red-50 rounded-lg p-4">
+                            {selectedProduct.checking.badWordsInName.length >
+                              0 && (
+                              <div className="mb-2">
+                                <span className="font-medium text-red-800">
+                                  Từ ngữ không phù hợp trong tên sản phẩm:
+                                </span>
+                                <div className="mt-1 text-red-600">
+                                  {selectedProduct.checking.badWordsInName.join(
+                                    ", "
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {selectedProduct.checking.badWordsInDescription
+                              .length > 0 && (
+                              <div>
+                                <span className="font-medium text-red-800">
+                                  Từ ngữ không phù hợp trong mô tả:
+                                </span>
+                                <div className="mt-1 text-red-600">
+                                  {selectedProduct.checking.badWordsInDescription.join(
+                                    ", "
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="bg-green-50 rounded-lg p-4">
+                            <span className="font-medium text-green-800">
+                              Không tìm thấy từ ngữ hoặc hình ảnh không phù hợp
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Status Badge */}
                     <div>
                       <span
@@ -666,7 +754,7 @@ const ProductDashboard: React.FC = () => {
         ? "bg-yellow-100 text-yellow-700"
         : selectedProduct.status === "Approved"
         ? "bg-green-100 text-green-700"
-        : selectedProduct.status === "In_transaction"
+        : selectedProduct.status === "In_Transaction"
         ? "bg-blue-100 text-blue-700"
         : selectedProduct.status === "Exchanged"
         ? "bg-purple-100 text-purple-700"
@@ -684,7 +772,7 @@ const ProductDashboard: React.FC = () => {
           ? "bg-yellow-500"
           : selectedProduct.status === "Approved"
           ? "bg-green-500"
-          : selectedProduct.status === "In_transaction"
+          : selectedProduct.status === "In_Transaction"
           ? "bg-blue-500"
           : selectedProduct.status === "Exchanged"
           ? "bg-purple-500"
@@ -699,7 +787,7 @@ const ProductDashboard: React.FC = () => {
                           ? "Đang chờ duyệt"
                           : selectedProduct.status === "Approved"
                           ? "Được duyệt"
-                          : selectedProduct.status === "In_transaction"
+                          : selectedProduct.status === "In_Transaction"
                           ? "Đang trao đổi"
                           : selectedProduct.status === "Exchanged"
                           ? "Đã trao đổi"
@@ -896,7 +984,8 @@ const ProductDashboard: React.FC = () => {
                           </button>
                           <button
                             onClick={() => {
-                              handleReject(selectedProduct);
+                              setProductToReject(selectedProduct);
+                              setIsRejectDialogOpen(true);
                               setIsModalOpen(false);
                             }}
                             className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg
@@ -955,6 +1044,15 @@ const ProductDashboard: React.FC = () => {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         transactionId={selectedTransactionId}
+      />
+
+      <RejectDialog
+        isOpen={isRejectDialogOpen}
+        onClose={() => {
+          setIsRejectDialogOpen(false);
+          setProductToReject(null);
+        }}
+        onConfirm={handleReject}
       />
     </div>
   );

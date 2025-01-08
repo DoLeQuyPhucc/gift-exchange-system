@@ -99,6 +99,9 @@ const AdminReportsPage = () => {
                       Lý do
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-orange-700">
+                      Sản phẩm
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-orange-700">
                       Thời gian
                     </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-orange-700">
