@@ -52,7 +52,7 @@ const RequestCard = ({ request, onApprove, onReject, loading, isMyRequest }: {
       <div className="w-48 h-48 flex-shrink-0">
         <img
           src={request.item_image[0]}
-          alt={request.item_name}
+          // alt={request.item_name}
           className="w-full h-full object-cover rounded-lg"
         />
       </div>
