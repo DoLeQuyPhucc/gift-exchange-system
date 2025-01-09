@@ -17,6 +17,7 @@ import {
   FileText,
   Flag,
   RotateCw,
+  Image,
 } from "lucide-react";
 import {
   Dialog,
@@ -120,9 +121,14 @@ const ProductDashboard: React.FC = () => {
         await fetchProducts();
         toast.success("Product approved successfully");
         await axiosInstance.post(
-          `notification/send?userId=${
-            product.owner_id
-          }&type=${"Approved Item"}&data=${"Sản phẩm của bạn đã được duyệt."}`
+          `notification/send?userId=${product.owner_id}`,
+          {
+            type: "Approved Item",
+            message: "Sản phẩm của bạn đã được duyệt.",
+            title: "Thông báo",
+            entity: "Item",
+            entityId: product.id,
+          }
         );
       } else {
         toast.error(response.data.message);
@@ -147,9 +153,14 @@ const ProductDashboard: React.FC = () => {
         await fetchProducts();
         toast.success("Product rejected successfully");
         await axiosInstance.post(
-          `notification/send?userId=${
-            productToReject.owner_id
-          }&type=${"Rejected Item"}&data=${"Sản phẩm của bạn đã bị từ chối."}`
+          `notification/send?userId=${productToReject.owner_id}`,
+          {
+            type: "Rejected Item",
+            message: "Sản phẩm của bạn đã bị từ chối",
+            title: "Thông báo",
+            entity: "Item",
+            entityId: productToReject.id,
+          }
         );
       } else {
         toast.error(response.data.message);
@@ -392,7 +403,7 @@ const ProductDashboard: React.FC = () => {
 
                 <button
                   onClick={handleReload}
-                  className={`p-2 rounded-full hover:bg-gray-100 transition-all ${
+                  className={`p-2 rounded-full transition-all ${
                     isLoading ? "animate-spin" : ""
                   }`}
                   title="Reload products"
@@ -520,7 +531,7 @@ const ProductDashboard: React.FC = () => {
                           >
                             <Eye className="w-5 h-5" />
                           </button>
-                          {product.status === "Pending" && (
+                          {product.status === "Pending" ? (
                             <>
                               <button
                                 onClick={() => handleApprove(product)}
@@ -538,7 +549,19 @@ const ProductDashboard: React.FC = () => {
                                 <XCircle className="w-5 h-5" />
                               </button>
                             </>
-                          )}
+                          ) : product.status === "Approved" ||
+                            product.status === "In_Transaction" ||
+                            product.status === "Exchanged" ? (
+                            <button
+                              onClick={() => {
+                                setProductToReject(product);
+                                setIsRejectDialogOpen(true);
+                              }}
+                              className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </button>
+                          ) : null}
                         </div>
                       </td>
                     </tr>
@@ -695,56 +718,6 @@ const ProductDashboard: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* Checking Information */}
-                    {selectedProduct.checking && (
-                      <div className="space-y-4 mb-6">
-                        <div className="font-medium text-gray-700">
-                          Thông tin kiểm duyệt
-                        </div>
-
-                        {/* Bad Words Section */}
-                        {selectedProduct.checking.badWordsInName.length > 0 ||
-                        selectedProduct.checking.badWordsInDescription.length >
-                          0 ? (
-                          <div className="bg-red-50 rounded-lg p-4">
-                            {selectedProduct.checking.badWordsInName.length >
-                              0 && (
-                              <div className="mb-2">
-                                <span className="font-medium text-red-800">
-                                  Từ ngữ không phù hợp trong tên sản phẩm:
-                                </span>
-                                <div className="mt-1 text-red-600">
-                                  {selectedProduct.checking.badWordsInName.join(
-                                    ", "
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {selectedProduct.checking.badWordsInDescription
-                              .length > 0 && (
-                              <div>
-                                <span className="font-medium text-red-800">
-                                  Từ ngữ không phù hợp trong mô tả:
-                                </span>
-                                <div className="mt-1 text-red-600">
-                                  {selectedProduct.checking.badWordsInDescription.join(
-                                    ", "
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="bg-green-50 rounded-lg p-4">
-                            <span className="font-medium text-green-800">
-                              Không tìm thấy từ ngữ hoặc hình ảnh không phù hợp
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                     {/* Status Badge */}
                     <div>
                       <span
@@ -838,6 +811,99 @@ const ProductDashboard: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Checking Information */}
+                    {selectedProduct.checking && (
+                      <div className="space-y-4 mb-6">
+                        <div className="font-medium text-gray-700">
+                          Thông tin kiểm duyệt
+                        </div>
+
+                        {/* Bad Words Section */}
+                        {selectedProduct.checking.badWordsInName.length > 0 ||
+                        selectedProduct.checking.badWordsInDescription.length >
+                          0 ? (
+                          <div className="bg-red-50 rounded-lg p-4">
+                            {selectedProduct.checking.badWordsInName.length >
+                              0 && (
+                              <div className="mb-2">
+                                <span className="font-medium text-red-800">
+                                  Từ ngữ không phù hợp trong tên sản phẩm:
+                                </span>
+                                <div className="mt-1 text-red-600">
+                                  {selectedProduct.checking.badWordsInName.join(
+                                    ", "
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {selectedProduct.checking.badWordsInDescription
+                              .length > 0 && (
+                              <div>
+                                <span className="font-medium text-red-800">
+                                  Từ ngữ không phù hợp trong mô tả:
+                                </span>
+                                <div className="mt-1 text-red-600">
+                                  {selectedProduct.checking.badWordsInDescription.join(
+                                    ", "
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="bg-green-50 rounded-lg p-4">
+                            <span className="font-medium text-green-800">
+                              Không tìm thấy từ ngữ hoặc hình ảnh không phù hợp
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Image Tags */}
+                    <div className="mt-6 space-y-4">
+                      <div className="bg-gray-50 p-4 rounded-xl">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Image className="w-5 h-5 text-blue-500" />
+                          <span className="text-sm font-semibold text-gray-700">
+                            NHẬN DIỆN HÌNH ẢNH
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          {Object.entries(
+                            selectedProduct.checking.imageTags
+                          ).map(([imageKey, tags], idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white p-3 rounded-lg shadow-sm"
+                            >
+                              <p className="text-sm text-gray-600 mb-2">
+                                Hình ảnh {idx + 1}:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {tags.map((tag, tagIdx) => (
+                                  <div
+                                    key={tagIdx}
+                                    className="inline-flex items-center px-2.5 py-1 rounded-full text-sm
+                          bg-blue-50 hover:bg-blue-100 transition-colors duration-200"
+                                  >
+                                    <span className="text-blue-700">
+                                      {tag.tag.vi}
+                                    </span>
+                                    <span className="ml-1.5 text-blue-500 text-xs">
+                                      {tag.confidence.toFixed(0)}%
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Info Grid */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-orange-50 p-4 rounded-xl">
@@ -847,6 +913,9 @@ const ProductDashboard: React.FC = () => {
                             DANH MỤC
                           </span>
                         </div>
+                        <p className="mt-1 text-orange-600 font-medium">
+                          {selectedProduct.category.parentName}
+                        </p>
                         <p className="mt-1 text-orange-600 font-medium">
                           {selectedProduct.category.name}
                         </p>
@@ -1022,6 +1091,22 @@ const ProductDashboard: React.FC = () => {
                           >
                             <Flag className="w-5 h-5" />
                             Chi tiết báo cáo
+                          </button>
+                        </div>
+                      ) : selectedProduct.status === "Approved" ||
+                        selectedProduct.status === "In_Transaction" ? (
+                        <div className="flex">
+                          <button
+                            onClick={() => {
+                              setProductToReject(selectedProduct);
+                              setIsRejectDialogOpen(true);
+                              setIsModalOpen(false);
+                            }}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg
+                        transition-colors duration-200 flex items-center justify-center gap-2"
+                          >
+                            <XCircle className="w-5 h-5" />
+                            Từ chối
                           </button>
                         </div>
                       ) : null}

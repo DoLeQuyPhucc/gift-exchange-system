@@ -5,6 +5,7 @@ export interface Product {
   category: {
     id: string;
     parentId: string;
+    parentName: string;
     name: string;
   };
   desiredCategory: {
