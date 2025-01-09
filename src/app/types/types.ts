@@ -48,6 +48,7 @@ export interface Product {
   transactionRequestIdOfItem: string | null;
   itemPendingRequestTo: number;
   pendingRequestForItem: number;
+  rejectMessage: string | null;
 }
 
 interface User {

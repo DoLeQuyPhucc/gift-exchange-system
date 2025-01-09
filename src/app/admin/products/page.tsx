@@ -811,6 +811,24 @@ const ProductDashboard: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Reject Message */}
+                    {selectedProduct.status === "Rejected" &&
+                      selectedProduct.rejectMessage && (
+                        <div className="mt-4 bg-red-50 border border-red-100 rounded-lg p-4">
+                          <div className="flex items-start gap-2">
+                            <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-red-800 mb-1">
+                                Lý do từ chối:
+                              </p>
+                              <p className="text-sm text-red-700">
+                                {selectedProduct.rejectMessage}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                     {/* Checking Information */}
                     {selectedProduct.checking && (
                       <div className="space-y-4 mb-6">

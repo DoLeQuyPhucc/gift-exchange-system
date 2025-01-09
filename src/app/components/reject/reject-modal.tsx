@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const REJECTION_REASONS = [
   "Hình ảnh không rõ ràng hoặc không phù hợp",
@@ -29,12 +30,18 @@ export const RejectDialog = ({
   onConfirm: (reason: string) => void;
 }) => {
   const [selectedReason, setSelectedReason] = useState<string>("");
+  const [customReason, setCustomReason] = useState<string>("");
 
   const handleConfirm = () => {
     if (selectedReason) {
-      onConfirm(selectedReason);
-      onClose();
-      setSelectedReason("");
+      const finalReason =
+        selectedReason === "Khác" ? customReason : selectedReason;
+      if (finalReason) {
+        onConfirm(finalReason);
+        onClose();
+        setSelectedReason("");
+        setCustomReason("");
+      }
     }
   };
 
@@ -53,6 +60,17 @@ export const RejectDialog = ({
               </div>
             ))}
           </RadioGroup>
+
+          {selectedReason === "Khác" && (
+            <div className="mt-4 pl-6">
+              <Input
+                placeholder="Nhập lý do từ chối..."
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <div className="flex space-x-2 justify-end">
@@ -61,7 +79,9 @@ export const RejectDialog = ({
             </Button>
             <Button
               onClick={handleConfirm}
-              disabled={!selectedReason}
+              disabled={
+                !selectedReason || (selectedReason === "Khác" && !customReason)
+              }
               className="bg-red-500 text-white hover:bg-red-600"
             >
               Xác nhận từ chối
