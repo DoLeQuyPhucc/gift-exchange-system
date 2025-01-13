@@ -17,7 +17,6 @@ const REJECTION_REASONS = [
   "Sản phẩm không được phép trao đổi trên nền tảng",
   "Giá trị sản phẩm không phù hợp",
   "Vi phạm điều khoản sử dụng",
-  "Khác",
 ];
 
 export const RejectDialog = ({

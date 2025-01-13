@@ -38,7 +38,7 @@ export interface Product {
       [key: string]: Array<{
         confidence: number;
         tag: {
-          vi: string;
+          en: string;
         };
       }>;
     };

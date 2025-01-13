@@ -49,6 +49,47 @@ const ProductDashboard: React.FC = () => {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [productToReject, setProductToReject] = useState<Product | null>(null);
 
+  const [timeRange, setTimeRange] = useState("all");
+
+  // Hàm lọc sản phẩm theo khoảng thời gian
+  const filterByTimeRange = (products: Product[]): Product[] => {
+    const now = new Date();
+
+    return products.filter((product) => {
+      const createdAt = new Date(product.createdAt);
+
+      switch (timeRange) {
+        case "last24hours":
+          return now.getTime() - createdAt.getTime() <= 24 * 60 * 60 * 1000;
+        case "last7days":
+          return now.getTime() - createdAt.getTime() <= 7 * 24 * 60 * 60 * 1000;
+        case "last30days":
+          return (
+            now.getTime() - createdAt.getTime() <= 30 * 24 * 60 * 60 * 1000
+          );
+        default:
+          return true; // Tất cả thời gian
+      }
+    });
+  };
+
+  // Sử dụng hàm lọc trong việc hiển thị sản phẩm
+  const filteredProducts = filterByTimeRange(products)
+    .filter(
+      (product) =>
+        product.name.includes(searchTerm) ||
+        product.category.name.includes(searchTerm)
+    )
+    .filter((product) =>
+      filterStatus === "all" ? true : product.status === filterStatus
+    );
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const currentProducts = filteredProducts.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+  );
+
   const sortOrder = [
     "Pending",
     "Approved",
@@ -170,22 +211,6 @@ const ProductDashboard: React.FC = () => {
       console.log(error);
     }
   };
-
-  const filteredProducts = products
-    .filter(
-      (product) =>
-        product.name.includes(searchTerm) ||
-        product.category.name.includes(searchTerm)
-    )
-    .filter((product) =>
-      filterStatus === "all" ? true : product.status === filterStatus
-    );
-
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  const currentProducts = filteredProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
 
   const statusCounts = products.reduce((acc, product) => {
     const status = product.status;
@@ -313,105 +338,93 @@ const ProductDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {/* Header */}
-        <div className="bg-white shadow-md overflow-hidden ">
-          <div className="bg-orange-500 px-6 py-4 flex items-center justify-between">
-            <h1 className="text-white text-2xl font-bold">
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-orange-500 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h1 className="text-white text-xl sm:text-2xl font-bold">
               Quản lí các sản phẩm
             </h1>
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
+            <div className="flex items-center gap-4">
+              <select
+                className="border border-gray-300 rounded-lg py-2 px-4 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                onChange={(e) => setTimeRange(e.target.value)}
+              >
+                <option value="all">Tất cả thời gian</option>
+                <option value="last24hours">24 giờ qua</option>
+                <option value="last7days">7 ngày qua</option>
+                <option value="last30days">30 ngày qua</option>
+              </select>
+              <div className="relative w-full sm:w-64">
                 <input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 py-2 w-full md:w-64 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="pl-10 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  width="20"
+                  height="20"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 16l4-4-4-4m8 0l-4 4 4 4"
+                  />
+                </svg>
               </div>
 
-              {/* Filter */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setFilterStatus("Pending")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "Pending"
-                      ? "bg-yellow-500 text-white"
-                      : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                  }`}
-                >
-                  Đang chờ: {statusCounts.Pending || 0}
-                </button>
-                <button
-                  onClick={() => setFilterStatus("Approved")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "Approved"
-                      ? "bg-green-500 text-white"
-                      : "bg-green-100 text-green-700 hover:bg-green-200"
-                  }`}
-                >
-                  Đã duyệt: {statusCounts.Approved || 0}
-                </button>
-                <button
-                  onClick={() => setFilterStatus("In_Transaction")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "In_Transaction"
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                  }`}
-                >
-                  Đang trao đổi: {statusCounts.In_Transaction || 0}
-                </button>
-                <button
-                  onClick={() => setFilterStatus("Exchanged")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "Exchanged"
-                      ? "bg-purple-500 text-white"
-                      : "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                  }`}
-                >
-                  Đã trao đổi: {statusCounts.Exchanged || 0}
-                </button>
-                <button
-                  onClick={() => setFilterStatus("Out_of_date")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "Out_of_date"
-                      ? "bg-gray-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  Hết hạn: {statusCounts.Out_of_date || 0}
-                </button>
-                <button
-                  onClick={() => setFilterStatus("Rejected")}
-                  className={`px-2 py-1 rounded-md text-sm transition-colors ${
-                    filterStatus === "Rejected"
-                      ? "bg-red-500 text-white"
-                      : "bg-red-100 text-red-700 hover:bg-red-200"
-                  }`}
-                >
-                  Đã từ chối: {statusCounts.Rejected || 0}
-                </button>
-                {filterStatus !== "all" && (
-                  <button
-                    onClick={() => setFilterStatus("all")}
-                    className="px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md text-sm transition-colors"
-                  >
-                    Xóa bộ lọc
-                  </button>
-                )}
-
-                <button
-                  onClick={handleReload}
-                  className={`p-2 rounded-full transition-all ${
-                    isLoading ? "animate-spin" : ""
-                  }`}
-                  title="Reload products"
-                >
-                  <RotateCw size={20} />
-                </button>
-              </div>
+              <button
+                onClick={handleReload}
+                className={`p-3 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all ${
+                  isLoading ? "animate-spin" : ""
+                }`}
+                title="Reload products"
+              >
+                <RotateCw size={20} />
+              </button>
             </div>
+          </div>
+
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { status: "Pending", label: "Đang chờ", color: "yellow" },
+              { status: "Approved", label: "Đã duyệt", color: "green" },
+              {
+                status: "In_Transaction",
+                label: "Đang trao đổi",
+                color: "blue",
+              },
+              { status: "Exchanged", label: "Đã trao đổi", color: "purple" },
+              { status: "Out_of_date", label: "Hết hạn", color: "gray" },
+              { status: "Rejected", label: "Đã từ chối", color: "red" },
+            ].map(({ status, label, color }) => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
+                  filterStatus === status
+                    ? `bg-${color}-500 text-white`
+                    : `bg-${color}-100 text-${color}-700 hover:bg-${color}-200`
+                }`}
+              >
+                {label}: {statusCounts[status] || 0}
+              </button>
+            ))}
+
+            {filterStatus !== "all" && (
+              <button
+                onClick={() => setFilterStatus("all")}
+                className="col-span-full px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-center transition-colors"
+              >
+                Xóa bộ lọc
+              </button>
+            )}
           </div>
         </div>
 
@@ -908,7 +921,7 @@ const ProductDashboard: React.FC = () => {
                           bg-blue-50 hover:bg-blue-100 transition-colors duration-200"
                                   >
                                     <span className="text-blue-700">
-                                      {tag.tag.vi}
+                                      {tag.tag.en}
                                     </span>
                                     <span className="ml-1.5 text-blue-500 text-xs">
                                       {tag.confidence.toFixed(0)}%
