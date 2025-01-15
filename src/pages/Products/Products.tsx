@@ -684,7 +684,7 @@ const ProductDashboard: React.FC = () => {
 
           {/* Enhanced Dialog */}
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto fixed top-[55%] left-[60%] translate-x-[-50%] translate-y-[-50%] bg-white rounded-lg">
               <DialogHeader className="space-y-1">
                 <DialogTitle className="text-2xl font-bold text-gray-900">
                   Thông tin sản phẩm
