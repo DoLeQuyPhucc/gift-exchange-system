@@ -160,7 +160,7 @@ const ProductDashboard: React.FC = () => {
         await axiosInstance.post(
           `notification/send?userId=${product.owner_id}`,
           {
-            type: 'Approved Item',
+            type: 'success',
             message: 'Sản phẩm của bạn đã được duyệt.',
             title: 'Thông báo',
             entity: 'Item',
@@ -192,7 +192,7 @@ const ProductDashboard: React.FC = () => {
         await axiosInstance.post(
           `notification/send?userId=${productToReject.owner_id}`,
           {
-            type: 'Rejected Item',
+            type: 'error',
             message: 'Sản phẩm của bạn đã bị từ chối',
             title: 'Thông báo',
             entity: 'Item',

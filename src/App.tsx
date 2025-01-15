@@ -18,6 +18,7 @@ import ECommerce from './pages/Dashboard/ECommerce';
 import DefaultLayout from './layout/DefaultLayout';
 import AuthLayout from './layout/AuthLayout';
 import ProductDashboard from './pages/Products/Products';
+import NotFound from './pages/NotFound/NotFound';
 
 const ProtectedRoute = () => {
   const token = localStorage.getItem('token');
@@ -156,6 +157,17 @@ function App() {
           />
         </Route>
       </Route>
+
+      {/* Not Found Route */}
+      <Route
+        path="*"
+        element={
+          <>
+            <PageTitle title="404 | Page Not Found" />
+            <NotFound />
+          </>
+        }
+      />
     </Routes>
   );
 }
