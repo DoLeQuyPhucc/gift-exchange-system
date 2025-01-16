@@ -73,7 +73,7 @@ const ProductDashboard: React.FC = () => {
   const filteredProducts = filterByTimeRange(products)
     .filter(
       (product) =>
-        product.name.includes(searchTerm) ||
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.name.includes(searchTerm),
     )
     .filter((product) =>
@@ -361,8 +361,9 @@ const ProductDashboard: React.FC = () => {
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="pl-10 pr-10 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
+                {/* Search Icon */}
                 <svg
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                   xmlns="http://www.w3.org/2000/svg"
@@ -376,9 +377,33 @@ const ProductDashboard: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M8 16l4-4-4-4m8 0l-4 4 4 4"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
+
+                {/* Clear Button */}
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      width="20"
+                      height="20"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
 
               <button
@@ -887,7 +912,7 @@ const ProductDashboard: React.FC = () => {
                         ) : (
                           <div className="bg-green-50 rounded-lg p-4">
                             <span className="font-medium text-green-800">
-                              Không tìm thấy từ ngữ hoặc hình ảnh không phù hợp
+                              Không tìm thấy từ ngữ không phù hợp
                             </span>
                           </div>
                         )}

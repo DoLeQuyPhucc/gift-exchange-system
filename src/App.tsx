@@ -19,6 +19,7 @@ import DefaultLayout from './layout/DefaultLayout';
 import AuthLayout from './layout/AuthLayout';
 import ProductDashboard from './pages/Products/Products';
 import NotFound from './pages/NotFound/NotFound';
+import Reports from './pages/Reports/Reports';
 
 const ProtectedRoute = () => {
   const token = localStorage.getItem('token');
@@ -130,6 +131,15 @@ function App() {
               <>
                 <PageTitle title="Products | Admin Dashboard" />
                 <ProductDashboard />
+              </>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <>
+                <PageTitle title="Reports | Admin Dashboard" />
+                <Reports />
               </>
             }
           />
