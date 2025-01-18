@@ -20,6 +20,7 @@ import AuthLayout from './layout/AuthLayout';
 import ProductDashboard from './pages/Products/Products';
 import NotFound from './pages/NotFound/NotFound';
 import Reports from './pages/Reports/Reports';
+import Campaign from './pages/Campaign/Campaign';
 
 const ProtectedRoute = () => {
   const token = localStorage.getItem('token');
@@ -156,6 +157,15 @@ function App() {
 
         {/* Staff Only Routes */}
         <Route element={<RoleBasedRoute allowedRoles={['Staff']} />}>
+          <Route
+            path="/campaigns"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <Campaign />
+              </>
+            }
+          />
           <Route
             path="/calendar"
             element={

@@ -7,12 +7,15 @@ import './css/satoshi.css';
 import 'jsvectormap/dist/css/jsvectormap.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import { Toaster } from 'react-hot-toast';
+import { CampaignProvider } from './context/CampaignContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Router>
-      <App />
-      <Toaster />
+      <CampaignProvider>
+        <App />
+        <Toaster />
+      </CampaignProvider>
     </Router>
   </React.StrictMode>,
 );

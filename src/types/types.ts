@@ -40,6 +40,7 @@ export interface Product {
         tag: {
           en: string;
         };
+        isMatchingCategory: boolean;
       }>;
     };
   };
@@ -244,4 +245,46 @@ export interface LoginResponse {
     profileURL: string;
   };
   message: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  bannerPicture: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+export interface CampaignResponse {
+  isSuccess: boolean;
+  code: number;
+  data: {
+    totalItems: number;
+    pageSize: number;
+    currentPage: number;
+    data: Campaign[];
+    totalPage: number;
+  };
+  message: string;
+}
+
+export interface CategoryCampaign {
+  id: string;
+  parentId: string;
+  parentName: string;
+  name: string;
+}
+
+export interface CampaignDetail {
+  id: string;
+  name: string;
+  bannerPicture: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+  updateddAt: string | null;
+  images: string[];
+  categories: CategoryCampaign[];
 }

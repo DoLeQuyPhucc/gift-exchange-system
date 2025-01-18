@@ -944,13 +944,30 @@ const ProductDashboard: React.FC = () => {
                                 {tags.map((tag, tagIdx) => (
                                   <div
                                     key={tagIdx}
-                                    className="inline-flex items-center px-2.5 py-1 rounded-full text-sm
-                          bg-blue-50 hover:bg-blue-100 transition-colors duration-200"
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm
+                                      ${
+                                        tag.isMatchingCategory
+                                          ? 'bg-green-50 hover:bg-green-100'
+                                          : 'bg-red-50 hover:bg-red-100'
+                                      } 
+                                      transition-colors duration-200`}
                                   >
-                                    <span className="text-blue-700">
+                                    <span
+                                      className={
+                                        tag.isMatchingCategory
+                                          ? 'text-green-700'
+                                          : 'text-red-700'
+                                      }
+                                    >
                                       {tag.tag.en}
                                     </span>
-                                    <span className="ml-1.5 text-blue-500 text-xs">
+                                    <span
+                                      className={`ml-1.5 text-xs ${
+                                        tag.isMatchingCategory
+                                          ? 'text-green-500'
+                                          : 'text-red-500'
+                                      }`}
+                                    >
                                       {tag.confidence.toFixed(0)}%
                                     </span>
                                   </div>
