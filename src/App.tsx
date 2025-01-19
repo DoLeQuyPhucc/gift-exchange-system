@@ -7,20 +7,13 @@ import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
 import Calendar from './pages/Calendar';
 import ECommerce from './pages/Dashboard/ECommerce';
-// import FormElements from './pages/Form/FormElements';
-// import FormLayout from './pages/Form/FormLayout';
-// import Profile from './pages/Profile';
-// import Settings from './pages/Settings';
-// import Tables from './pages/Tables';
-// import Alerts from './pages/UiElements/Alerts';
-// import Buttons from './pages/UiElements/Buttons';
-// import Chart from './pages/Chart';
 import DefaultLayout from './layout/DefaultLayout';
 import AuthLayout from './layout/AuthLayout';
 import ProductDashboard from './pages/Products/Products';
 import NotFound from './pages/NotFound/NotFound';
 import Reports from './pages/Reports/Reports';
 import Campaign from './pages/Campaign/Campaign';
+import CreateCampaign from './pages/Campaign/CreateCampaign';
 
 const ProtectedRoute = () => {
   const token = localStorage.getItem('token');
@@ -74,7 +67,7 @@ const RoleBasedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   if (!role || !allowedRoles.includes(role)) {
     // Redirect về trang mặc định của role
     if (role === 'Staff') {
-      return <Navigate to="/calendar" replace />;
+      return <Navigate to="/campaigns" replace />;
     }
     if (role === 'Admin') {
       return <Navigate to="/products" replace />;
@@ -163,6 +156,15 @@ function App() {
               <>
                 <PageTitle title="Campaign | Staff Dashboard" />
                 <Campaign />
+              </>
+            }
+          />
+          <Route
+            path="/create-campaign"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <CreateCampaign />
               </>
             }
           />

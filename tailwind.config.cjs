@@ -7,7 +7,8 @@ module.exports = {
   darkMode: ['class', 'class'],
   theme: {
     fontFamily: {
-      satoshi: ['Satoshi', 'sans-serif'],
+      sans: ['Roboto', ...defaultTheme.fontFamily.sans],
+      roboto: ['Roboto', 'sans-serif'],
     },
     screens: {
       '2xsm': '375px',

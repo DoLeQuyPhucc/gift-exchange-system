@@ -279,6 +279,7 @@ export interface CategoryCampaign {
 export interface CampaignDetail {
   id: string;
   name: string;
+  description: string;
   bannerPicture: string;
   startDate: string;
   endDate: string;

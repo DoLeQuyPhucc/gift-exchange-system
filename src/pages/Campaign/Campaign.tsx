@@ -10,7 +10,7 @@ function Campaign() {
   const fetchCampaigns = async () => {
     try {
       const response = await axiosInstance.get(
-        '/campaign/list?pageIndex=1&pageSize=10',
+        'campaign/list?pageIndex=1&pageSize=10',
       );
       const campaignResponse = response.data as CampaignResponse;
       setCampaignData(campaignResponse.data.data);
