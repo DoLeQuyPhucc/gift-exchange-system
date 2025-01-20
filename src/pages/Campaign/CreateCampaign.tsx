@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import {
   Select,
@@ -7,205 +7,71 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import axiosInstance from '@/api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-
-// Types
-interface Category {
-  id: string;
-  name: string;
-  status: string;
-  parentId: string | null;
-  parentName: string | null;
-  subCategories: SubCategory[] | null;
-}
-
-interface SubCategory {
-  id: string;
-  parentId: string;
-  parentName: string;
-  name: string;
-}
-
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: number;
-  data: T;
-  message: string;
-}
+import { useCampaignContext } from '@/context/CampaignContext';
+import {
+  fetchCategories,
+  submitCampaign,
+  updateFormCategories,
+  updateFormImages,
+  uploadImage,
+} from '@/services/CampaignService';
 
 const CreateCampaign = () => {
   // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    bannerPicture: '',
-    startDate: '',
-    endDate: '',
-    images: [] as string[],
-    categoryId: '',
-    subCategoryId: '',
-  });
-
-  // API States
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const [isLoadingSubCategories, setIsLoadingSubCategories] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    formData,
+    setFormData,
+    categories,
+    setCategories,
+    isLoadingCategories,
+    setIsLoadingCategories,
+    error,
+    setError,
+    isSubmitting,
+    setIsSubmitting,
+    selectedCategory,
+    setSelectedCategory,
+    setIsUploading,
+  } = useCampaignContext();
 
   // Navigation
   const navigate = useNavigate();
 
   // Fetch categories on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      setIsLoadingCategories(true);
-      setError(null);
-      try {
-        const response = await axiosInstance.get<ApiResponse<Category[]>>(
-          'category',
-        );
-        if (response.data.isSuccess) {
-          setCategories(response.data.data);
-        } else {
-          setError(response.data.message);
-        }
-      } catch (err) {
-        setError('Không thể tải danh mục. Vui lòng thử lại sau.');
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
+    fetchCategories(setCategories, setError, setIsLoadingCategories);
   }, []);
 
-  // Fetch subcategories when category is selected
-  useEffect(() => {
-    const fetchSubCategories = async () => {
-      if (!formData.categoryId) {
-        setSubCategories([]);
-        return;
-      }
+  const handleAddCategory = () => {
+    updateFormCategories.add(selectedCategory, formData, setFormData);
+    setSelectedCategory('');
+  };
 
-      setIsLoadingSubCategories(true);
-      setError(null);
-      try {
-        const response = await axiosInstance.get<ApiResponse<Category>>(
-          `category/${formData.categoryId}`,
-        );
-        if (response.data.isSuccess && response.data.data.subCategories) {
-          setSubCategories(response.data.data.subCategories);
-        } else {
-          setError(response.data.message);
-        }
-      } catch (err) {
-        setError('Không thể tải danh mục con. Vui lòng thử lại sau.');
-      } finally {
-        setIsLoadingSubCategories(false);
-      }
-    };
+  const handleRemoveCategory = (categoryId: string) => {
+    updateFormCategories.remove(categoryId, setFormData);
+  };
 
-    fetchSubCategories();
-  }, [formData.categoryId]);
+  const handleRemoveBanner = () => {
+    updateFormImages.removeBanner(setFormData);
+  };
 
-  const handleImageUpload = (
+  const handleRemoveImage = (indexToRemove: number) => {
+    updateFormImages.removeImage(indexToRemove, setFormData);
+  };
+
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: 'banner' | 'gallery',
+    type: 'gallery' | 'banner',
   ) => {
     const files = e.target.files;
-    if (files) {
-      if (type === 'banner') {
-        setFormData((prev) => ({
-          ...prev,
-          bannerPicture: URL.createObjectURL(files[0]),
-        }));
-      } else {
-        const imageUrls = Array.from(files).map((file) =>
-          URL.createObjectURL(file),
-        );
-        setFormData((prev) => ({
-          ...prev,
-          images: [...prev.images, ...imageUrls],
-        }));
-      }
-    }
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      categoryId: value,
-      subCategoryId: '',
-    }));
-  };
-
-  const handleSubCategoryChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      subCategoryId: value,
-    }));
-  };
-
-  const validateForm = () => {
-    if (!formData.name.trim()) return 'Name is required';
-    if (!formData.description.trim()) return 'Description is required';
-    if (!formData.bannerPicture) return 'Banner image is required';
-    if (!formData.startDate) return 'Start date is required';
-    if (!formData.endDate) return 'End date is required';
-    if (!formData.categoryId) return 'Category is required';
-    return null;
-  };
-
-  const formatDateWithoutZ = (date: string) => {
-    return new Date(date).toISOString().substring(0, 19);
+    if (!files) return;
+    await uploadImage.handleUpload(files, type, setFormData, setIsUploading);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const validationError = validateForm();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      // Format request body according to API spec
-      const requestBody = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        bannerPicture: formData.bannerPicture,
-        startDate: formatDateWithoutZ(formData.startDate),
-        endDate: formatDateWithoutZ(formData.endDate),
-        images: formData.images,
-        categories: [formData.categoryId],
-      };
-
-      const response = await axiosInstance.post('campaign/create', requestBody);
-
-      if (response.data.isSuccess) {
-        toast.success('Campaign created successfully');
-        navigate('/campaigns');
-      } else {
-        throw new Error(response.data.message || 'Failed to create campaign');
-      }
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        'Failed to create campaign';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitCampaign(formData, setIsSubmitting, navigate);
   };
 
   return (
@@ -269,11 +135,20 @@ const CreateCampaign = () => {
                   className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                 />
                 {formData.bannerPicture && (
-                  <img
-                    src={formData.bannerPicture}
-                    alt="Banner preview"
-                    className="h-20 w-20 object-cover rounded"
-                  />
+                  <div className="mt-2 relative">
+                    <img
+                      src={formData.bannerPicture}
+                      alt="Banner preview"
+                      className="max-h-40 rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveBanner}
+                      className="absolute top-1 right-1 bg-meta-1 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-opacity-90"
+                    >
+                      ×
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -319,58 +194,63 @@ const CreateCampaign = () => {
             {/* Thể loại */}
             <div className="mb-4.5">
               <label className="mb-2.5 block text-black dark:text-white">
-                Danh mục chính <span className="text-meta-1">*</span>
+                Danh mục <span className="text-meta-1">*</span>
               </label>
-              <Select
-                value={formData.categoryId}
-                onValueChange={handleCategoryChange}
-                disabled={isLoadingCategories}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Chọn danh mục" />
-                </SelectTrigger>
-                <SelectContent>
-                  {isLoadingCategories ? (
-                    <SelectItem value="loading">Đang tải...</SelectItem>
-                  ) : (
-                    categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
 
-            {/* SubCategory Selection */}
-            {formData.categoryId && (
-              <div className="mb-4.5">
-                <label className="mb-2.5 block text-black dark:text-white">
-                  Danh mục phụ
-                </label>
+              {/* Selected Categories List */}
+              <div className="mb-3 flex flex-wrap gap-2">
+                {formData.categories.map((categoryId) => (
+                  <div
+                    key={categoryId}
+                    className="flex items-center gap-2 rounded bg-gray-100 px-3 py-1 dark:bg-gray-700"
+                  >
+                    <span>
+                      {categories.find((c) => c.id === categoryId)?.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategory(categoryId)}
+                      className="text-meta-1"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Category Selector and Add Button */}
+              <div className="flex gap-2">
                 <Select
-                  value={formData.subCategoryId}
-                  onValueChange={handleSubCategoryChange}
-                  disabled={!formData.categoryId || isLoadingSubCategories}
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                  disabled={isLoadingCategories}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Chọn danh mục phụ" />
+                    <SelectValue placeholder="Chọn danh mục" />
                   </SelectTrigger>
                   <SelectContent>
-                    {isLoadingSubCategories ? (
+                    {isLoadingCategories ? (
                       <SelectItem value="loading">Đang tải...</SelectItem>
                     ) : (
-                      subCategories.map((subCategory) => (
-                        <SelectItem key={subCategory.id} value={subCategory.id}>
-                          {subCategory.name}
+                      categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
                         </SelectItem>
                       ))
                     )}
                   </SelectContent>
                 </Select>
+
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  disabled={!selectedCategory}
+                  className="inline-flex items-center justify-center rounded bg-primary px-6 py-3 text-center font-medium text-white hover:bg-opacity-90 disabled:bg-opacity-50"
+                >
+                  Thêm
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Error Display */}
             {error && (
@@ -394,12 +274,20 @@ const CreateCampaign = () => {
               {formData.images.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {formData.images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`Gallery ${index + 1}`}
-                      className="h-20 w-20 object-cover rounded"
-                    />
+                    <div key={index} className="relative">
+                      <img
+                        src={img}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-40 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-1 right-1 bg-meta-1 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-opacity-90"
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -410,17 +298,12 @@ const CreateCampaign = () => {
               type="submit"
               className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
-                !formData.categoryId ||
-                !formData.startDate ||
-                !formData.endDate ||
-                isLoadingCategories ||
-                isLoadingSubCategories ||
-                isSubmitting
+                !formData.startDate || !formData.endDate || isSubmitting
               }
             >
               {isSubmitting
                 ? 'Đang tạo...'
-                : isLoadingCategories || isLoadingSubCategories
+                : isLoadingCategories
                 ? 'Đang tải...'
                 : 'Tạo chiến dịch'}
             </button>

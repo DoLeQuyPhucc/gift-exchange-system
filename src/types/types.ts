@@ -123,6 +123,24 @@ export interface CategoryAttribute {
 export interface Category {
   id: string;
   name: string;
+  status: string;
+  parentId: string | null;
+  parentName: string | null;
+  subCategories: SubCategory[] | null;
+}
+
+export interface SubCategory {
+  id: string;
+  parentId: string;
+  parentName: string;
+  name: string;
+}
+
+export interface ApiCreateCampaignResponse<T> {
+  isSuccess: boolean;
+  code: number;
+  data: T;
+  message: string;
 }
 
 export interface AttributeValue {
@@ -276,7 +294,7 @@ export interface CategoryCampaign {
   name: string;
 }
 
-export interface CampaignDetail {
+export interface CampaignDetail extends Campaign {
   id: string;
   name: string;
   description: string;
@@ -288,4 +306,24 @@ export interface CampaignDetail {
   updateddAt: string | null;
   images: string[];
   categories: CategoryCampaign[];
+}
+
+export interface CreateCampaignForm {
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  bannerPicture: string;
+  images: string[];
+  categories: string[];
+}
+
+export interface FormDataType {
+  name: string;
+  description: string;
+  bannerPicture: string;
+  startDate: string;
+  endDate: string;
+  images: string[];
+  categories: string[];
 }

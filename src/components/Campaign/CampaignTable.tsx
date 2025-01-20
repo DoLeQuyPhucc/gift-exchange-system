@@ -1,25 +1,50 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Campaign, CampaignDetail } from '@/types/types';
-import axiosInstance from '@/api/axiosInstance';
 import CampaignDetailModal from '@/pages/Campaign/CampaignDetail';
+import { startCampaign, viewCampaignDetail } from '@/services/CampaignService';
+import { useCampaignContext } from '@/context/CampaignContext';
 
 interface CampaignTableProps {
   campaigns?: Campaign[];
+  onRefresh: () => void;
 }
 
-const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] =
-    useState<CampaignDetail | null>(null);
+const CampaignTable: React.FC<CampaignTableProps> = ({
+  campaigns = [],
+  onRefresh,
+}) => {
+  const {
+    statusFilter,
+    showModal,
+    selectedCampaignId,
+    selectedCampaign,
+    isModalOpen,
+    setStatusFilter,
+    setShowModal,
+    setSelectedCampaignId,
+    setSelectedCampaign,
+    setIsModalOpen,
+  } = useCampaignContext();
 
-  const handleViewCampaign = async (campaignId: string) => {
-    try {
-      const response = await axiosInstance.get(`campaign/${campaignId}`);
-      setSelectedCampaign(response.data.data);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('Failed to fetch campaign details');
-    }
+  const statusCounts = campaigns.reduce<Record<string, number>>(
+    (acc, campaign) => {
+      acc[campaign.status] = (acc[campaign.status] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+
+  const filteredCampaigns =
+    statusFilter === 'All'
+      ? campaigns
+      : campaigns.filter((campaign) => campaign.status === statusFilter);
+
+  const handleViewCampaign = (campaignId: string) => {
+    viewCampaignDetail(campaignId, setSelectedCampaign, setIsModalOpen);
+  };
+
+  const handleStartCampaign = () => {
+    startCampaign(selectedCampaignId!, setShowModal, onRefresh);
   };
 
   return (
@@ -28,7 +53,10 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
         <h4 className="text-xl font-semibold text-black dark:text-white">
           Campaigns List
         </h4>
-        <button className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary px-6 py-2.5 text-center font-medium text-white hover:bg-opacity-90">
+        <button
+          onClick={onRefresh}
+          className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary px-6 py-2.5 text-center font-medium text-white hover:bg-opacity-90"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -36,17 +64,44 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            className="lucide lucide-circle-plus"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-refresh-cw"
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M8 12h8" />
-            <path d="M12 8v8" />
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9-9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M3 21v-5h5" />
           </svg>
-          Add Campaign
+          Refresh
         </button>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-3">
+        <button
+          onClick={() => setStatusFilter('All')}
+          className={`rounded-md px-4 py-2 text-sm ${
+            statusFilter === 'All'
+              ? 'bg-primary text-white'
+              : 'bg-gray-100 dark:bg-boxdark'
+          }`}
+        >
+          All ({campaigns.length})
+        </button>
+        {['Planned', 'Ongoing', 'Completed', 'Canceled'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`rounded-md px-4 py-2 text-sm ${
+              statusFilter === status
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 dark:bg-boxdark'
+            }`}
+          >
+            {status} ({statusCounts[status] || 0})
+          </button>
+        ))}
       </div>
 
       <div className="max-w-full overflow-x-auto">
@@ -71,7 +126,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
             </tr>
           </thead>
           <tbody>
-            {campaigns.map((campaign, key) => (
+            {filteredCampaigns.map((campaign) => (
               <tr key={campaign.id}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
@@ -101,6 +156,34 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                   <div className="flex items-center space-x-3.5">
+                    {['Planned', 'Canceled', 'Completed'].includes(
+                      campaign.status,
+                    ) && (
+                      <button
+                        className="hover:text-primary"
+                        onClick={() => {
+                          setSelectedCampaignId(campaign.id);
+                          setShowModal(true);
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="green"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          className="lucide lucide-power"
+                        >
+                          <path d="M12 2v10" />
+                          <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+                        </svg>
+                      </button>
+                    )}
+
                     <button
                       className="hover:text-primary"
                       onClick={() => handleViewCampaign(campaign.id)}
@@ -111,7 +194,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
                         height="24"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="currentColor"
+                        stroke="blue"
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -121,6 +204,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                     </button>
+
                     <button className="hover:text-primary">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -152,8 +236,31 @@ const CampaignTable: React.FC<CampaignTableProps> = ({ campaigns = [] }) => {
       <CampaignDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        campaign={selectedCampaign}
+        campaign={selectedCampaign as CampaignDetail}
       />
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-boxdark p-6 rounded-lg">
+            <h3 className="mb-4">Xác nhận bắt đầu chiến dịch</h3>
+            <p className="mb-6">Có chắc chắn bắt đầu chiến dịch này không?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="bg-gray hover:bg-opacity-90 px-4 py-2 rounded"
+                onClick={() => setShowModal(false)}
+              >
+                Không
+              </button>
+              <button
+                className="bg-primary text-white px-4 py-2 rounded"
+                onClick={handleStartCampaign}
+              >
+                Có
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
