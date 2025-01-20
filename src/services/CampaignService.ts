@@ -72,6 +72,25 @@ export const startCampaign = async (
   }
 };
 
+export const cancelCampaign = async (
+  selectedCampaignId: string,
+  setShowCancelModal: (show: boolean) => void,
+  onRefresh: () => void,
+) => {
+  try {
+    await axiosInstance.put('/campaign/status', {
+      id: selectedCampaignId,
+      status: 'Canceled',
+    });
+    toast.success('Hủy chiến dịch thành công!');
+    setShowCancelModal(false);
+    onRefresh();
+  } catch (error) {
+    console.error('Error canceling campaign:', error);
+    toast.error('Có lỗi xảy ra khi hủy chiến dịch!');
+  }
+};
+
 export const fetchCategories = async (
   setCategories: (categories: Category[]) => void,
   setError: (error: string | null) => void,
@@ -185,10 +204,25 @@ export const uploadImage = {
   },
 };
 
+export const resetFormData = (
+  setFormData: React.Dispatch<React.SetStateAction<FormDataType>>,
+) => {
+  setFormData({
+    name: '',
+    description: '',
+    bannerPicture: '',
+    startDate: '',
+    endDate: '',
+    images: [],
+    categories: [],
+  });
+};
+
 export const submitCampaign = async (
   formData: FormDataType,
   setIsSubmitting: (value: boolean) => void,
   navigate: NavigateFunction,
+  setFormData: React.Dispatch<React.SetStateAction<FormDataType>>,
 ) => {
   try {
     setIsSubmitting(true);
@@ -211,6 +245,7 @@ export const submitCampaign = async (
 
     if (response.data.isSuccess) {
       toast.success('Tạo chiến dịch thành công!');
+      resetFormData(setFormData);
       navigate('/campaigns');
     } else {
       toast.error(response.data.message || 'Tạo chiến dịch thất bại!');
@@ -218,7 +253,69 @@ export const submitCampaign = async (
   } catch (error) {
     toast.error('Có lỗi xảy ra khi tạo chiến dịch!');
     console.error('Error submitting campaign:', error);
+    resetFormData(setFormData);
   } finally {
     setIsSubmitting(false);
+  }
+};
+
+export const getCampaignItems = async (
+  campaignId: string,
+  pageIndex: number = 1,
+  pageSize: number = 10,
+) => {
+  try {
+    const response = await axiosInstance.get(
+      `campaign/item?campaignId=${campaignId}&pageIndex=${pageIndex}&pageSize=${pageSize}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching campaign items:', error);
+    throw error;
+  }
+};
+
+export const approveItem = async (data: {
+  itemId: string;
+  volunteerId: string;
+  appointmentDate: string;
+}) => {
+  try {
+    const response = await axiosInstance.post('campaign/item/approve', data);
+
+    if (response.data.isSuccess) {
+      toast.success('Duyệt thành công!');
+    } else {
+      toast.error(response.data.message || 'Duyệt thất bại!');
+    }
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectItem = async (itemId: string) => {
+  try {
+    const response = await axiosInstance.post(
+      `campaign/item/reject?itemId=${itemId}`,
+    );
+
+    if (response.data.isSuccess) {
+      toast.success('Từ chối thành công!');
+    } else {
+      toast.error(response.data.message || 'Từ chối thất bại!');
+    }
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getVolunteers = async () => {
+  try {
+    const response = await axiosInstance.get('user/volunteer');
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 };

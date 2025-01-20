@@ -71,7 +71,7 @@ const CreateCampaign = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await submitCampaign(formData, setIsSubmitting, navigate);
+    await submitCampaign(formData, setIsSubmitting, navigate, setFormData);
   };
 
   return (

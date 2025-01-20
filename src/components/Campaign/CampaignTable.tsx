@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Campaign, CampaignDetail } from '@/types/types';
 import CampaignDetailModal from '@/pages/Campaign/CampaignDetail';
-import { startCampaign, viewCampaignDetail } from '@/services/CampaignService';
+import {
+  startCampaign,
+  viewCampaignDetail,
+  getCampaignItems,
+  cancelCampaign,
+} from '@/services/CampaignService';
 import { useCampaignContext } from '@/context/CampaignContext';
+import ItemDetailModal from './ItemDetailModal';
+import { Package } from 'lucide-react';
 
 interface CampaignTableProps {
   campaigns?: Campaign[];
@@ -26,6 +33,13 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
     setIsModalOpen,
   } = useCampaignContext();
 
+  const [isItemsModalOpen, setIsItemsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [campaignItems, setCampaignItems] = useState<any[]>([]);
+  const [isItemDetailModalOpen, setIsItemDetailModalOpen] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [campaignToCancel, setCampaignToCancel] = useState<string | null>(null);
+
   const statusCounts = campaigns.reduce<Record<string, number>>(
     (acc, campaign) => {
       acc[campaign.status] = (acc[campaign.status] || 0) + 1;
@@ -45,6 +59,30 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
 
   const handleStartCampaign = () => {
     startCampaign(selectedCampaignId!, setShowModal, onRefresh);
+  };
+
+  const handleCancelClick = (campaignId: string) => {
+    setCampaignToCancel(campaignId);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (campaignToCancel) {
+      await cancelCampaign(campaignToCancel, setShowCancelModal, onRefresh);
+      setCampaignToCancel(null);
+    }
+  };
+
+  const handleViewItems = async (campaignId: string) => {
+    try {
+      const response = await getCampaignItems(campaignId);
+      if (response.isSuccess) {
+        setCampaignItems(response.data.data);
+        setIsItemsModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching campaign items:', error);
+    }
   };
 
   return (
@@ -146,9 +184,12 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                   <p
                     className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                      campaign.status === 'Planned'
-                        ? 'bg-warning bg-opacity-10 text-warning'
-                        : 'bg-success bg-opacity-10 text-success'
+                      {
+                        Planned: 'bg-warning/10 text-warning',
+                        Ongoing: 'bg-success/10 text-success',
+                        Canceled: 'bg-danger/10 text-danger',
+                        Completed: 'bg-primary/10 text-primary',
+                      }[campaign.status] || 'bg-gray-100 text-gray-500'
                     }`}
                   >
                     {campaign.status}
@@ -205,7 +246,18 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                       </svg>
                     </button>
 
-                    <button className="hover:text-primary">
+                    <button
+                      className="hover:text-primary"
+                      onClick={() => handleViewItems(campaign.id)}
+                      title="View Items"
+                    >
+                      <Package className="h-5 w-5 text-blue-500" />
+                    </button>
+
+                    <button
+                      className="hover:text-primary"
+                      onClick={() => handleCancelClick(campaign.id)}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -239,6 +291,76 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
         campaign={selectedCampaign as CampaignDetail}
       />
 
+      {/* Campaign Items Modal */}
+      {isItemsModalOpen && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black/50">
+          <div className="relative mx-auto h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white p-4 shadow-xl dark:bg-boxdark md:p-6">
+            <button
+              onClick={() => setIsItemsModalOpen(false)}
+              className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-gray-500 hover:bg-gray-100"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <div className="h-full overflow-y-auto">
+              <h2 className="mb-4 text-xl font-bold">Campaign Items</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {campaignItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="cursor-pointer rounded-lg border p-4 hover:border-primary"
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsItemDetailModalOpen(true);
+                    }}
+                  >
+                    <div className="aspect-square overflow-hidden rounded-lg">
+                      <img
+                        src={item.images[0]}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <h3 className="mt-2 font-medium">{item.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      by {item.owner_Name}
+                    </p>
+                    <span
+                      className={`mt-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                        item.isApprovedCampaign
+                          ? 'bg-success/10 text-success'
+                          : 'bg-warning/10 text-warning'
+                      }`}
+                    >
+                      {item.isApprovedCampaign ? 'Approved' : 'Pending'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        isOpen={isItemDetailModalOpen}
+        onClose={() => setIsItemDetailModalOpen(false)}
+        item={selectedItem}
+      />
+
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white dark:bg-boxdark p-6 rounded-lg">
@@ -254,6 +376,30 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
               <button
                 className="bg-primary text-white px-4 py-2 rounded"
                 onClick={handleStartCampaign}
+              >
+                Có
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-boxdark p-6 rounded-lg">
+            <h3 className="mb-4">Xác nhận hủy chiến dịch</h3>
+            <p className="mb-6">Có chắc chắn muốn hủy chiến dịch này không?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="bg-gray hover:bg-opacity-90 px-4 py-2 rounded"
+                onClick={() => setShowCancelModal(false)}
+              >
+                Không
+              </button>
+              <button
+                className="bg-danger text-white px-4 py-2 rounded"
+                onClick={handleConfirmCancel}
               >
                 Có
               </button>

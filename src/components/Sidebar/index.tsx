@@ -135,71 +135,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <ul className="mb-6 flex flex-col gap-1.5">
               {role === 'Admin' && (
                 <>
-                  {/* <!-- Menu Item Products --> */}
-                  <li>
-                    <NavLink
-                      to="/products"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        pathname.includes('products') &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="lucide lucide-list-collapse"
-                      >
-                        <path d="m3 10 2.5-2.5L3 5" />
-                        <path d="m3 19 2.5-2.5L3 14" />
-                        <path d="M10 6h11" />
-                        <path d="M10 12h11" />
-                        <path d="M10 18h11" />
-                      </svg>
-                      Products
-                    </NavLink>
-                  </li>
-                  {/* <!-- Menu Item Products --> */}
-
-                  {/* <!-- Menu Item Reports --> */}
-                  <li>
-                    <NavLink
-                      to="/reports"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        pathname.includes('reports') &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="lucide lucide-flag"
-                      >
-                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                        <line x1="4" x2="4" y1="22" y2="15" />
-                      </svg>
-                      Reports
-                    </NavLink>
-                  </li>
-                  {/* <!-- Menu Item Reports --> */}
-                </>
-              )}
-
-              {role === 'Staff' && (
-                <>
                   {/* <!-- Menu Item campaigns --> */}
                   <SidebarLinkGroup
                     activeCondition={
@@ -313,7 +248,72 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     }}
                   </SidebarLinkGroup>
                   {/* <!-- Menu Item campaigns --> */}
+                  
+                  {/* <!-- Menu Item Products --> */}
+                  <li>
+                    <NavLink
+                      to="/products"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        pathname.includes('products') &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        className="lucide lucide-list-collapse"
+                      >
+                        <path d="m3 10 2.5-2.5L3 5" />
+                        <path d="m3 19 2.5-2.5L3 14" />
+                        <path d="M10 6h11" />
+                        <path d="M10 12h11" />
+                        <path d="M10 18h11" />
+                      </svg>
+                      Products
+                    </NavLink>
+                  </li>
+                  {/* <!-- Menu Item Products --> */}
 
+                  {/* <!-- Menu Item Reports --> */}
+                  <li>
+                    <NavLink
+                      to="/reports"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        pathname.includes('reports') &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        className="lucide lucide-flag"
+                      >
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                        <line x1="4" x2="4" y1="22" y2="15" />
+                      </svg>
+                      Reports
+                    </NavLink>
+                  </li>
+                  {/* <!-- Menu Item Reports --> */}
+                </>
+              )}
+
+              {role === 'Staff' && (
+                <>
                   {/* <!-- Menu Item Campaign --> */}
                   {/* <li>
                     <NavLink
