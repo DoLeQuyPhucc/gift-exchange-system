@@ -135,6 +135,71 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <ul className="mb-6 flex flex-col gap-1.5">
               {role === 'Admin' && (
                 <>
+                  {/* <!-- Menu Item Products --> */}
+                  <li>
+                    <NavLink
+                      to="/products"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        pathname.includes('products') &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        className="lucide lucide-list-collapse"
+                      >
+                        <path d="m3 10 2.5-2.5L3 5" />
+                        <path d="m3 19 2.5-2.5L3 14" />
+                        <path d="M10 6h11" />
+                        <path d="M10 12h11" />
+                        <path d="M10 18h11" />
+                      </svg>
+                      Products
+                    </NavLink>
+                  </li>
+                  {/* <!-- Menu Item Products --> */}
+
+                  {/* <!-- Menu Item Reports --> */}
+                  <li>
+                    <NavLink
+                      to="/reports"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        pathname.includes('reports') &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        className="lucide lucide-flag"
+                      >
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                        <line x1="4" x2="4" y1="22" y2="15" />
+                      </svg>
+                      Reports
+                    </NavLink>
+                  </li>
+                  {/* <!-- Menu Item Reports --> */}
+                </>
+              )}
+
+              {role === 'Staff' && (
+                <>
                   {/* <!-- Menu Item campaigns --> */}
                   <SidebarLinkGroup
                     activeCondition={
@@ -248,103 +313,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     }}
                   </SidebarLinkGroup>
                   {/* <!-- Menu Item campaigns --> */}
-                  
-                  {/* <!-- Menu Item Products --> */}
-                  <li>
-                    <NavLink
-                      to="/products"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        pathname.includes('products') &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="lucide lucide-list-collapse"
-                      >
-                        <path d="m3 10 2.5-2.5L3 5" />
-                        <path d="m3 19 2.5-2.5L3 14" />
-                        <path d="M10 6h11" />
-                        <path d="M10 12h11" />
-                        <path d="M10 18h11" />
-                      </svg>
-                      Products
-                    </NavLink>
-                  </li>
-                  {/* <!-- Menu Item Products --> */}
-
-                  {/* <!-- Menu Item Reports --> */}
-                  <li>
-                    <NavLink
-                      to="/reports"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        pathname.includes('reports') &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="lucide lucide-flag"
-                      >
-                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                        <line x1="4" x2="4" y1="22" y2="15" />
-                      </svg>
-                      Reports
-                    </NavLink>
-                  </li>
-                  {/* <!-- Menu Item Reports --> */}
-                </>
-              )}
-
-              {role === 'Staff' && (
-                <>
-                  {/* <!-- Menu Item Campaign --> */}
-                  {/* <li>
-                    <NavLink
-                      to="/campaigns"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        pathname.includes('campaigns') &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="lucide lucide-file-text"
-                      >
-                        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                        <path d="M10 9H8" />
-                        <path d="M16 13H8" />
-                        <path d="M16 17H8" />
-                      </svg>
-                      Campaign
-                    </NavLink>
-                  </li> */}
-                  {/* <!-- Menu Item Calendar --> */}
 
                   {/* <!-- Menu Item Calendar --> */}
                   <li>

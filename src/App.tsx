@@ -120,24 +120,6 @@ function App() {
         {/* Admin Only Routes */}
         <Route element={<RoleBasedRoute allowedRoles={['Admin']} />}>
           <Route
-            path="/campaigns"
-            element={
-              <>
-                <PageTitle title="Campaign | Staff Dashboard" />
-                <Campaign />
-              </>
-            }
-          />
-          <Route
-            path="/create-campaign"
-            element={
-              <>
-                <PageTitle title="Campaign | Staff Dashboard" />
-                <CreateCampaign />
-              </>
-            }
-          />
-          <Route
             path="/products"
             element={
               <>
@@ -168,6 +150,24 @@ function App() {
 
         {/* Staff Only Routes */}
         <Route element={<RoleBasedRoute allowedRoles={['Staff']} />}>
+          <Route
+            path="/campaigns"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <Campaign />
+              </>
+            }
+          />
+          <Route
+            path="/create-campaign"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <CreateCampaign />
+              </>
+            }
+          />
           <Route
             path="/calendar"
             element={
