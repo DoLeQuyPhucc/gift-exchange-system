@@ -328,9 +328,29 @@ export interface CampaignDetail extends Campaign {
   endDate: string;
   status: string;
   createdAt: string;
-  updateddAt: string | null;
+  updatedAt: string | null;
   images: string[];
   categories: CategoryCampaign[];
+  totalParticipants: number;
+  totalItems: number;
+  topParticipants?: {
+    userId: string;
+    username: string;
+    email: string;
+    phone: string;
+    profilePicture: string;
+    point: number;
+    address: {
+      addressId: string;
+      address: string;
+      addressCoordinates: {
+        latitude: string;
+        longitude: string;
+      };
+      isDefault: boolean;
+    }[];
+    dateJoined: string;
+  }[];
 }
 
 export interface CreateCampaignForm {

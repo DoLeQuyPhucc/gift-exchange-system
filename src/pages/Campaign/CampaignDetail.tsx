@@ -73,7 +73,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
             {/* Description */}
             <div className="px-2">
               <h3 className="text-base font-bold text-black dark:text-gray-400">
-                Description
+                Mô tả chi tiết
               </h3>
               <p className="mt-2 text-sm text-gray-900 dark:text-white">
                 {campaign.description}
@@ -85,7 +85,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
               <div className="space-y-4">
                 <div>
                   <h3 className="text-base font-bold text-black dark:text-gray-400">
-                    Status
+                    Trạng thái
                   </h3>
                   <span
                     className={`mt-1 inline-flex rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(
@@ -98,7 +98,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
 
                 <div>
                   <h3 className="text-base font-bold text-black dark:text-gray-400">
-                    Duration
+                    Thời gian
                   </h3>
                   <div className="mt-1 space-y-1">
                     <p className="text-sm text-gray-900 dark:text-white">
@@ -114,7 +114,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
               <div className="space-y-4">
                 <div>
                   <h3 className="text-base font-bold text-black dark:text-gray-400">
-                    Categories
+                    Danh mục
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {campaign.categories.map((category) => (
@@ -130,7 +130,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
 
                 <div>
                   <h3 className="text-base font-bold text-black dark:text-gray-400">
-                    Created At
+                    Ngày tạo
                   </h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
                     {new Date(campaign.createdAt).toLocaleString()}
@@ -143,7 +143,7 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
             {campaign.images.length > 0 && (
               <div className="px-2">
                 <h3 className="mb-3 text-base font-bold text-black dark:text-gray-400">
-                  Gallery
+                  Các hình ảnh
                 </h3>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                   {campaign.images.map((image, index) => (
@@ -161,6 +161,67 @@ const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Campaign Statistics */}
+            <div className="px-2">
+              <h3 className="text-base font-bold text-black dark:text-gray-400 mb-4">
+                Thống kê chi tiết
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-primary/10 rounded-lg p-4">
+                  <h4 className="text-sm text-gray-600 mb-1">
+                    Tổng số người tham gia
+                  </h4>
+                  <p className="text-2xl font-bold text-primary">
+                    {campaign.totalParticipants}
+                  </p>
+                </div>
+                <div className="bg-primary/10 rounded-lg p-4">
+                  <h4 className="text-sm text-gray-600 mb-1">Tổng sản phẩm</h4>
+                  <p className="text-2xl font-bold text-primary">
+                    {campaign.totalItems}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Participants */}
+            {campaign.topParticipants &&
+              campaign.topParticipants.length > 0 && (
+                <div className="px-2 mt-6">
+                  <h3 className="text-base font-bold text-black dark:text-gray-400 mb-4">
+                    Top người tham gia
+                  </h3>
+                  <div className="space-y-4">
+                    {campaign.topParticipants.map((participant) => (
+                      <div
+                        key={participant.userId}
+                        className="flex items-center gap-4 bg-gray-50 rounded-lg p-4"
+                      >
+                        <img
+                          src={participant.profilePicture}
+                          alt={participant.username}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {participant.username}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            Points: {participant.point}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Joined:{' '}
+                            {new Date(
+                              participant.dateJoined,
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
       </div>

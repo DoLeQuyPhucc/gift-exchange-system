@@ -3,7 +3,6 @@ import {
   Campaign,
   CampaignDetail,
   CampaignItem,
-  CampaignItemsResponse,
   ProductOfCampaign,
 } from '@/types/types';
 import CampaignDetailModal from '@/pages/Campaign/CampaignDetail';
@@ -140,8 +139,8 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
           return;
         }
 
-        console.log('Selected Campaign:', selectedCampaign); // Debug log
-        console.log('Categories:', selectedCampaign.categories); // Debug log
+        console.log('Selected Campaign:', selectedCampaign);
+        console.log('Categories:', selectedCampaign.categories);
 
         if (
           !selectedCampaign.categories ||
@@ -180,7 +179,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="mb-6 flex items-center justify-between">
         <h4 className="text-xl font-semibold text-black dark:text-white">
-          Campaigns List
+          Danh sách chiến dịch
         </h4>
         <button
           onClick={onRefresh}
@@ -203,7 +202,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
             <path d="M21 12a9 9 0 0 1-9 9-9.75 9.75 0 0 1-6.74-2.74L3 16" />
             <path d="M3 21v-5h5" />
           </svg>
-          Refresh
+          Làm mới
         </button>
       </div>
 
@@ -216,7 +215,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
               : 'bg-gray-100 dark:bg-boxdark'
           }`}
         >
-          All ({campaigns.length})
+          Tất cả ({campaigns.length})
         </button>
         {['Planned', 'Ongoing', 'Completed', 'Canceled'].map((status) => (
           <button
@@ -238,19 +237,19 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Campaign Name
+                Tên chiến dịch
               </th>
               <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                Start Date
+                Ngày bắt đầu
               </th>
               <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                End Date
+                Ngày kết thúc
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Status
+                Trạng thái
               </th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">
-                Actions
+                Hành động
               </th>
             </tr>
           </thead>

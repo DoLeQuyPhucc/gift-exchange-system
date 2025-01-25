@@ -162,7 +162,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <path d="M10 12h11" />
                         <path d="M10 18h11" />
                       </svg>
-                      Products
+                      Sản phẩm
                     </NavLink>
                   </li>
                   {/* <!-- Menu Item Products --> */}
@@ -191,7 +191,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                         <line x1="4" x2="4" y1="22" y2="15" />
                       </svg>
-                      Reports
+                      Báo cáo
                     </NavLink>
                   </li>
                   {/* <!-- Menu Item Reports --> */}
@@ -248,7 +248,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 fill=""
                               />
                             </svg>
-                            Campaign
+                            Chiến dịch
                             <svg
                               className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
                                 open && 'rotate-180'
@@ -283,7 +283,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                     (isActive && '!text-white')
                                   }
                                 >
-                                  Campaign List
+                                  Danh sách chiến dịch
                                 </NavLink>
                               </li>
                             </ul>
@@ -302,7 +302,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                     (isActive && '!text-white')
                                   }
                                 >
-                                  Create Campaign
+                                  Tạo chiến dịch
                                 </NavLink>
                               </li>
                             </ul>
