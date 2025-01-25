@@ -13,6 +13,7 @@ interface ItemDetailModalProps {
   onClose: () => void;
   item: any;
   onRefresh?: () => void;
+  viewMode?: 'campaign-items' | 'suggested-items';
 }
 
 const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
@@ -20,6 +21,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   onClose,
   item,
   onRefresh,
+  viewMode,
 }) => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] =
     useState<boolean>(false);
@@ -63,6 +65,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
         itemId: item.id,
         volunteerId: selectedVolunteer,
         appointmentDate: appointmentDate.replace('Z', ''),
+        campaignId: item.itemCampaign.campaignId,
       });
       setIsApproveDialogOpen(false);
       onClose();
@@ -245,22 +248,35 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
             {!item.isApprovedCampaign && (
               <div className="sticky bottom-0 mt-6 flex justify-end gap-4 border-t bg-white p-4 dark:bg-boxdark">
-                <Button
-                  variant="destructive"
-                  onClick={handleReject}
-                  disabled={loading}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={handleApproveClick}
-                  disabled={loading}
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Approve
-                </Button>
+                {viewMode === 'campaign-items' ? (
+                  <>
+                    <Button
+                      variant="destructive"
+                      onClick={handleReject}
+                      disabled={loading}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Reject
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={handleApproveClick}
+                      disabled={loading}
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      Approve
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="default"
+                    onClick={handleApproveClick}
+                    disabled={loading}
+                  >
+                    <Check className="mr-2 h-4 w-4" />
+                    Thêm vào chiến dịch
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -284,24 +300,6 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Select Volunteer
-                </label>
-                <select
-                  className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2 outline-none focus:border-primary dark:border-strokedark"
-                  value={selectedVolunteer}
-                  onChange={(e) => setSelectedVolunteer(e.target.value)}
-                >
-                  <option value="">Select a volunteer</option>
-                  {volunteers.map((volunteer) => (
-                    <option key={volunteer.userId} value={volunteer.userId}>
-                      {volunteer.username} - {volunteer.address[0]?.address}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
                   Appointment Date
                 </label>
                 <input
@@ -311,6 +309,32 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                   onChange={(e) => setAppointmentDate(e.target.value)}
                   min={new Date().toISOString().slice(0, 16)}
                 />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Select Volunteer
+                </label>
+                <select
+                  className={`w-full rounded-lg border border-stroke bg-transparent px-4 py-2 outline-none focus:border-primary dark:border-strokedark ${
+                    !appointmentDate ? 'cursor-not-allowed opacity-50' : ''
+                  }`}
+                  value={selectedVolunteer}
+                  onChange={(e) => setSelectedVolunteer(e.target.value)}
+                  disabled={!appointmentDate}
+                >
+                  <option value="">Select a volunteer</option>
+                  {volunteers.map((volunteer) => (
+                    <option key={volunteer.userId} value={volunteer.userId}>
+                      {volunteer.username} - {volunteer.address[0]?.address}
+                    </option>
+                  ))}
+                </select>
+                {!appointmentDate && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Please select an appointment date first
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end gap-4">

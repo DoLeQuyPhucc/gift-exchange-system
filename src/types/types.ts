@@ -64,6 +64,30 @@ interface Address {
   addressCoordinates: string;
 }
 
+export interface ProductOfCampaign {
+  id: string;
+  name: string;
+  description: string;
+  category: {
+    id: string;
+    parentId: string;
+    parentName: string;
+    name: string;
+  };
+  itemCampaign: {
+    itemCampaignId: string;
+    campaignId: string;
+    name: string;
+    description: string;
+    bannerPicture: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
+  images: string[];
+  owner_Name: string;
+}
+
 // interface SubInfoAddress {
 //   addressId: string;
 //   address: string;
@@ -272,6 +296,7 @@ export interface Campaign {
   startDate: string;
   endDate: string;
   status: string;
+  categories?: CategoryCampaign[];
 }
 
 export interface CampaignResponse {
@@ -326,4 +351,32 @@ export interface FormDataType {
   endDate: string;
   images: string[];
   categories: string[];
+}
+
+export interface ItemCampaign {
+  itemCampaignId: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  bannerPicture: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+export interface CampaignItem extends Product {
+  itemCampaign: ItemCampaign;
+}
+
+export interface CampaignItemsResponse {
+  isSuccess: boolean;
+  code: number;
+  data: {
+    totalItems: number;
+    pageSize: number;
+    currentPage: number;
+    data: CampaignItem[];
+    totalPage: number;
+  };
+  message: string;
 }

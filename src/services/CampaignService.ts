@@ -55,16 +55,23 @@ export const viewCampaignDetail = async (
   }
 };
 
+export const viewCampaignDetailMode = async (campaignId: string) => {
+  try {
+    const response = await axiosInstance.get(`campaign/${campaignId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch campaign details');
+    throw error;
+  }
+};
+
 export const startCampaign = async (
   selectedCampaignId: string,
   setShowModal: (show: boolean) => void,
   onRefresh: () => void,
 ) => {
   try {
-    await axiosInstance.put('/campaign/status', {
-      id: selectedCampaignId,
-      status: 'Ongoing',
-    });
+    await axiosInstance.put(`campaign/start?campaignId=${selectedCampaignId}`);
     setShowModal(false);
     onRefresh();
   } catch (error) {
@@ -279,9 +286,10 @@ export const approveItem = async (data: {
   itemId: string;
   volunteerId: string;
   appointmentDate: string;
+  campaignId: string;
 }) => {
   try {
-    const response = await axiosInstance.post('campaign/item/approve', data);
+    const response = await axiosInstance.put('campaign/item/approve', data);
 
     if (response.data.isSuccess) {
       toast.success('Duyệt thành công!');
@@ -316,6 +324,18 @@ export const getVolunteers = async () => {
     const response = await axiosInstance.get('user/volunteer');
     return response.data;
   } catch (error) {
+    throw error;
+  }
+};
+
+export const getItemsByCategory = async (categoryId: string) => {
+  try {
+    const response = await axiosInstance.get(
+      `items/admin/view-by-category?category=${categoryId}&pageSize=10`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching items by category:', error);
     throw error;
   }
 };

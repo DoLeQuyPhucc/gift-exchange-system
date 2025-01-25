@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { Campaign, CampaignDetail } from '@/types/types';
+import React, { useEffect, useState } from 'react';
+import {
+  Campaign,
+  CampaignDetail,
+  CampaignItem,
+  CampaignItemsResponse,
+  ProductOfCampaign,
+} from '@/types/types';
 import CampaignDetailModal from '@/pages/Campaign/CampaignDetail';
 import {
   startCampaign,
   viewCampaignDetail,
   getCampaignItems,
   cancelCampaign,
+  getItemsByCategory,
+  viewCampaignDetailMode,
 } from '@/services/CampaignService';
 import { useCampaignContext } from '@/context/CampaignContext';
 import ItemDetailModal from './ItemDetailModal';
@@ -35,10 +43,15 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
 
   const [isItemsModalOpen, setIsItemsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [campaignItems, setCampaignItems] = useState<any[]>([]);
+  const [campaignItems, setCampaignItems] = useState<CampaignItem[]>([]);
   const [isItemDetailModalOpen, setIsItemDetailModalOpen] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [campaignToCancel, setCampaignToCancel] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<
+    'campaign-items' | 'suggested-items'
+  >('campaign-items');
+  const [suggestedItems, setSuggestedItems] = useState<ProductOfCampaign[]>([]);
 
   const statusCounts = campaigns.reduce<Record<string, number>>(
     (acc, campaign) => {
@@ -73,15 +86,93 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
     }
   };
 
+  useEffect(() => {
+    console.log('Selected Campaign Updated:', selectedCampaign);
+  }, [selectedCampaign]);
+
   const handleViewItems = async (campaignId: string) => {
     try {
-      const response = await getCampaignItems(campaignId);
+      // Fetch campaign details first and set it
+      const campaignResponse = await viewCampaignDetailMode(campaignId);
+      if (campaignResponse.isSuccess) {
+        const campaignData = campaignResponse.data.data;
+        console.log('Campaign Data:', campaignData); // Debug log
+        setSelectedCampaign(campaignData); // Set campaign data first
+
+        // Then fetch items
+        const itemsResponse = await getCampaignItems(campaignId);
+        if (itemsResponse.isSuccess) {
+          setCampaignItems(itemsResponse.data.data);
+        }
+      }
+      setIsItemsModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching campaign data:', error);
+    }
+  };
+
+  const fetchSuggestedItems = async (categoryId: string) => {
+    try {
+      setIsLoading(true);
+      console.log('Fetching suggested items for category:', categoryId);
+      const response = await getItemsByCategory(categoryId);
+      console.log('Suggested items response:', response);
       if (response.isSuccess) {
-        setCampaignItems(response.data.data);
-        setIsItemsModalOpen(true);
+        setSuggestedItems(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching campaign items:', error);
+      console.error('Error fetching suggested items:', error);
+      setSuggestedItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewModeChange = async (
+    mode: 'campaign-items' | 'suggested-items',
+  ) => {
+    setViewMode(mode);
+
+    if (mode === 'suggested-items') {
+      try {
+        if (!selectedCampaign) {
+          console.error('No campaign selected');
+          return;
+        }
+
+        console.log('Selected Campaign:', selectedCampaign); // Debug log
+        console.log('Categories:', selectedCampaign.categories); // Debug log
+
+        if (
+          !selectedCampaign.categories ||
+          selectedCampaign.categories.length === 0
+        ) {
+          // Nếu không có categories, fetch lại campaign
+          const campaignResponse = await viewCampaignDetailMode(
+            selectedCampaign.id,
+          );
+          if (campaignResponse.isSuccess) {
+            const updatedCampaign = campaignResponse.data.data;
+            setSelectedCampaign(updatedCampaign);
+
+            if (
+              updatedCampaign.categories &&
+              updatedCampaign.categories.length > 0
+            ) {
+              const categoryId = updatedCampaign.categories[0].id;
+              console.log('Fetching items for category:', categoryId);
+              await fetchSuggestedItems(categoryId);
+            }
+          }
+        } else {
+          // Nếu đã có categories
+          const categoryId = selectedCampaign.categories[0].id;
+          console.log('Fetching items for existing category:', categoryId);
+          await fetchSuggestedItems(categoryId);
+        }
+      } catch (error) {
+        console.error('Error in handleViewModeChange:', error);
+      }
     }
   };
 
@@ -294,7 +385,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
       {/* Campaign Items Modal */}
       {isItemsModalOpen && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black/50">
-          <div className="relative mx-auto h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white p-4 shadow-xl dark:bg-boxdark md:p-6">
+          <div className="relative mx-auto h-[90vh] w-full max-w-6xl overflow-hidden rounded-lg bg-white p-4 shadow-xl dark:bg-boxdark md:p-6">
             <button
               onClick={() => setIsItemsModalOpen(false)}
               className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-gray-500 hover:bg-gray-100"
@@ -315,39 +406,186 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
             </button>
 
             <div className="h-full overflow-y-auto">
-              <h2 className="mb-4 text-xl font-bold">Campaign Items</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {campaignItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="cursor-pointer rounded-lg border p-4 hover:border-primary"
-                    onClick={() => {
-                      setSelectedItem(item);
-                      setIsItemDetailModalOpen(true);
-                    }}
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold">Vật phẩm chiến dịch</h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleViewModeChange('campaign-items')}
+                    disabled={isLoading}
+                    className={`rounded-md px-4 py-2 ${
+                      viewMode === 'campaign-items'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-100 dark:bg-boxdark'
+                    }`}
                   >
-                    <div className="aspect-square overflow-hidden rounded-lg">
-                      <img
-                        src={item.images[0]}
-                        alt={item.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <h3 className="mt-2 font-medium">{item.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      by {item.owner_Name}
-                    </p>
-                    <span
-                      className={`mt-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                        item.isApprovedCampaign
-                          ? 'bg-success/10 text-success'
-                          : 'bg-warning/10 text-warning'
+                    Vật phẩm chiến dịch
+                  </button>
+                  <button
+                    onClick={() => handleViewModeChange('suggested-items')}
+                    disabled={isLoading}
+                    className={`rounded-md px-4 py-2 ${
+                      viewMode === 'suggested-items'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-100 dark:bg-boxdark'
+                    }`}
+                  >
+                    {isLoading ? 'Đang tải...' : 'Vật phẩm đề xuất'}
+                  </button>
+                </div>
+              </div>
+
+              {isLoading && (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              )}
+
+              {!isLoading &&
+                viewMode === 'suggested-items' &&
+                suggestedItems.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    Không tìm thấy vật phẩm đề xuất
+                  </div>
+                )}
+
+              {viewMode === 'campaign-items' ? (
+                <div className="mb-4 flex gap-3">
+                  <button
+                    onClick={() => setStatusFilter('All')}
+                    className={`rounded-md px-4 py-2 text-sm ${
+                      statusFilter === 'All'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-100 dark:bg-boxdark'
+                    }`}
+                  >
+                    All ({campaignItems.length})
+                  </button>
+                  {['Pending', 'Approved'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`rounded-md px-4 py-2 text-sm ${
+                        statusFilter === status
+                          ? 'bg-primary text-white'
+                          : 'bg-gray-100 dark:bg-boxdark'
                       }`}
                     >
-                      {item.isApprovedCampaign ? 'Approved' : 'Pending'}
-                    </span>
-                  </div>
-                ))}
+                      {status} (
+                      {
+                        campaignItems.filter(
+                          (item) => item.itemCampaign.status === status,
+                        ).length
+                      }
+                      )
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="max-w-full overflow-x-auto">
+                <table className="w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Item Image
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Name
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Owner
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Category
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Status
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(viewMode === 'campaign-items'
+                      ? campaignItems.filter(
+                          (item) =>
+                            statusFilter === 'All' ||
+                            item.itemCampaign.status === statusFilter,
+                        )
+                      : suggestedItems
+                    ).map((item) => (
+                      <tr key={item.id}>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <div className="h-12 w-12 overflow-hidden rounded-lg">
+                            <img
+                              src={item.images[0]}
+                              alt={item.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <p className="text-black dark:text-white">
+                            {item.name}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <p className="text-black dark:text-white">
+                            {item.owner_Name}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <p className="text-black dark:text-white">
+                            {item.category.name}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          {viewMode === 'campaign-items' && (
+                            <span
+                              className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${
+                                item.itemCampaign.status === 'Approved'
+                                  ? 'bg-success/10 text-success'
+                                  : 'bg-warning/10 text-warning'
+                              }`}
+                            >
+                              {item.itemCampaign.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <button
+                            className="hover:text-primary"
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setIsItemDetailModalOpen(true);
+                            }}
+                          >
+                            <svg
+                              className="h-6 w-6 text-blue-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -359,6 +597,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
         isOpen={isItemDetailModalOpen}
         onClose={() => setIsItemDetailModalOpen(false)}
         item={selectedItem}
+        viewMode={viewMode}
       />
 
       {showModal && (
