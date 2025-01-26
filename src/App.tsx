@@ -138,19 +138,6 @@ function App() {
             }
           />
           <Route
-            path="/"
-            element={
-              <>
-                <PageTitle title="Dashboard | Admin Dashboard" />
-                <ECommerce />
-              </>
-            }
-          />
-        </Route>
-
-        {/* Staff Only Routes */}
-        <Route element={<RoleBasedRoute allowedRoles={['Staff']} />}>
-          <Route
             path="/campaigns"
             element={
               <>
@@ -168,6 +155,19 @@ function App() {
               </>
             }
           />
+          <Route
+            path="/"
+            element={
+              <>
+                <PageTitle title="Dashboard | Admin Dashboard" />
+                <ECommerce />
+              </>
+            }
+          />
+        </Route>
+
+        {/* Staff Only Routes */}
+        <Route element={<RoleBasedRoute allowedRoles={['Staff']} />}>
           <Route
             path="/calendar"
             element={

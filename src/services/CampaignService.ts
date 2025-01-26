@@ -1,7 +1,6 @@
 import axiosInstance from '@/api/axiosInstance';
 import {
   ApiCreateCampaignResponse,
-  Campaign,
   CampaignResponse,
   Category,
   FormDataType,
@@ -41,17 +40,21 @@ export const fetchCampaigns = async (setCampaignData: (data: any) => void) => {
   }
 };
 
-export const viewCampaignDetail = async (
-  campaignId: string,
-  setSelectedCampaign: (campaign: Campaign) => void,
-  setIsModalOpen: (isOpen: boolean) => void,
-) => {
+export const viewCampaignDetail = async (campaignId: string) => {
   try {
     const response = await axiosInstance.get(`campaign/${campaignId}`);
-    setSelectedCampaign(response.data.data);
-    setIsModalOpen(true);
+    return {
+      isSuccess: true,
+      data: {
+        data: response.data.data,
+      },
+    };
   } catch (error) {
-    console.error('Failed to fetch campaign details');
+    console.error('Failed to fetch campaign details:', error);
+    return {
+      isSuccess: false,
+      data: null,
+    };
   }
 };
 
@@ -331,11 +334,29 @@ export const getVolunteers = async () => {
 export const getItemsByCategory = async (categoryId: string) => {
   try {
     const response = await axiosInstance.get(
-      `items/admin/view-by-category?category=${categoryId}&pageSize=10`,
+      `items/admin/view-by-category?status=Approved&category=${categoryId}&pageSize=10`,
     );
     return response.data;
   } catch (error) {
     console.error('Error fetching items by category:', error);
+    throw error;
+  }
+};
+
+export const addItemToCampaign = async (itemId: string, campaignId: string) => {
+  try {
+    const response = await axiosInstance.post(
+      `campaign/add-item?itemId=${itemId}&campaignId=${campaignId}`,
+    );
+
+    if (response.data.isSuccess) {
+      toast.success('Thêm sản phẩm vào chiến dịch thành công!');
+    } else {
+      toast.error(response.data.message || 'Thêm sản phẩm thất bại!');
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error adding item to campaign:', error);
     throw error;
   }
 };

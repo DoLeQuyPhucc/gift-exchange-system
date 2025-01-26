@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Campaign,
   CampaignDetail,
@@ -65,8 +65,12 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
       ? campaigns
       : campaigns.filter((campaign) => campaign.status === statusFilter);
 
-  const handleViewCampaign = (campaignId: string) => {
-    viewCampaignDetail(campaignId, setSelectedCampaign, setIsModalOpen);
+  const handleViewCampaign = async (campaignId: string) => {
+    const response = await viewCampaignDetail(campaignId);
+    if (response.isSuccess && response.data?.data) {
+      setSelectedCampaign(response.data.data);
+      setIsModalOpen(true);
+    }
   };
 
   const handleStartCampaign = () => {
@@ -85,28 +89,27 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log('Selected Campaign Updated:', selectedCampaign);
-  }, [selectedCampaign]);
-
   const handleViewItems = async (campaignId: string) => {
     try {
-      // Fetch campaign details first and set it
-      const campaignResponse = await viewCampaignDetailMode(campaignId);
-      if (campaignResponse.isSuccess) {
-        const campaignData = campaignResponse.data.data;
-        console.log('Campaign Data:', campaignData); // Debug log
-        setSelectedCampaign(campaignData); // Set campaign data first
+      // Fetch campaign details
+      const campaignResponse = await viewCampaignDetail(campaignId);
 
-        // Then fetch items
+      if (campaignResponse.isSuccess && campaignResponse.data?.data) {
+        const campaignData = campaignResponse.data.data;
+        console.log('Campaign Data:', campaignData);
+        setSelectedCampaign(campaignData);
+
+        // Fetch items
         const itemsResponse = await getCampaignItems(campaignId);
         if (itemsResponse.isSuccess) {
           setCampaignItems(itemsResponse.data.data);
         }
+        setIsItemsModalOpen(true);
+      } else {
+        console.error('Failed to fetch campaign details');
       }
-      setIsItemsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching campaign data:', error);
+      console.error('Error in handleViewItems:', error);
     }
   };
 
@@ -375,12 +378,6 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
         </table>
       </div>
 
-      <CampaignDetailModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        campaign={selectedCampaign as CampaignDetail}
-      />
-
       {/* Campaign Items Modal */}
       {isItemsModalOpen && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black/50">
@@ -457,7 +454,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                         : 'bg-gray-100 dark:bg-boxdark'
                     }`}
                   >
-                    All ({campaignItems.length})
+                    Tất cả ({campaignItems.length})
                   </button>
                   {['Pending', 'Approved'].map((status) => (
                     <button
@@ -486,22 +483,22 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                   <thead>
                     <tr className="bg-gray-2 text-left dark:bg-meta-4">
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Item Image
+                        Hình ảnh sản phẩm
                       </th>
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Name
+                        Tên sản phẩm
                       </th>
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Owner
+                        Chủ sở hữu
                       </th>
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Category
+                        Danh mục
                       </th>
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Status
+                        Trạng thái
                       </th>
                       <th className="py-4 px-4 font-medium text-black dark:text-white">
-                        Actions
+                        Hành động
                       </th>
                     </tr>
                   </thead>
@@ -591,14 +588,6 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
         </div>
       )}
 
-      {/* Item Detail Modal */}
-      <ItemDetailModal
-        isOpen={isItemDetailModalOpen}
-        onClose={() => setIsItemDetailModalOpen(false)}
-        item={selectedItem}
-        viewMode={viewMode}
-      />
-
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white dark:bg-boxdark p-6 rounded-lg">
@@ -645,6 +634,21 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        isOpen={isItemDetailModalOpen}
+        onClose={() => setIsItemDetailModalOpen(false)}
+        item={selectedItem}
+        viewMode={viewMode}
+        campaignId={selectedCampaign?.id}
+      />
+
+      <CampaignDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        campaign={selectedCampaign as CampaignDetail}
+      />
     </div>
   );
 };

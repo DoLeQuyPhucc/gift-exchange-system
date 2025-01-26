@@ -6,7 +6,9 @@ import {
   approveItem,
   rejectItem,
   getVolunteers,
+  addItemToCampaign,
 } from '@/services/CampaignService';
+import toast from 'react-hot-toast';
 
 interface ItemDetailModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ interface ItemDetailModalProps {
   item: any;
   onRefresh?: () => void;
   viewMode?: 'campaign-items' | 'suggested-items';
+  campaignId?: string;
 }
 
 const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
@@ -22,6 +25,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   item,
   onRefresh,
   viewMode,
+  campaignId,
 }) => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] =
     useState<boolean>(false);
@@ -30,6 +34,8 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -92,6 +98,28 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
       console.error('Error rejecting item:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmAddItemCampaign = async () => {
+    setIsConfirmDialogOpen(true);
+  };
+
+  const handleConfirmAdd = async () => {
+    try {
+      if (!campaignId) {
+        toast.error('Campaign ID is required');
+        return;
+      }
+      setIsSubmitting(true);
+      await addItemToCampaign(item.id, campaignId);
+      setIsConfirmDialogOpen(false);
+      onClose();
+      onRefresh?.();
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi thêm sản phẩm!');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -270,7 +298,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                 ) : (
                   <Button
                     variant="default"
-                    onClick={handleApproveClick}
+                    onClick={handleConfirmAddItemCampaign}
                     disabled={loading}
                   >
                     <Check className="mr-2 h-4 w-4" />
@@ -376,6 +404,34 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               >
                 Reject
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Add Item to Campaign */}
+      {isConfirmDialogOpen && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center overflow-hidden bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-boxdark">
+            <h3 className="mb-4 text-xl font-bold">Xác nhận thêm sản phẩm</h3>
+            <p className="mb-6">
+              Bạn có chắc chắn muốn thêm sản phẩm này vào chiến dịch?
+            </p>
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsConfirmDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Hủy
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleConfirmAdd}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Đang xử lý...' : 'Có'}
+              </Button>
             </div>
           </div>
         </div>
