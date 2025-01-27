@@ -23,6 +23,25 @@ interface CampaignTableProps {
   onRefresh: () => void;
 }
 
+const STATUS_TRANSLATIONS = {
+  Planned: 'Đã lên kế hoạch',
+  Ongoing: 'Đang diễn ra',
+  Completed: 'Đã hoàn thành',
+  Canceled: 'Đã hủy',
+  All: 'Tất cả',
+} as const;
+
+const ITEM_STATUS_TRANSLATIONS = {
+  Pending: 'Chờ duyệt',
+  Approved: 'Đã duyệt',
+  Rejected: 'Đã từ chối',
+  All: 'Tất cả',
+} as const;
+
+type StatusType = keyof typeof STATUS_TRANSLATIONS;
+
+type ItemStatusType = keyof typeof ITEM_STATUS_TRANSLATIONS;
+
 const CampaignTable: React.FC<CampaignTableProps> = ({
   campaigns = [],
   onRefresh,
@@ -51,6 +70,8 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
     'campaign-items' | 'suggested-items'
   >('campaign-items');
   const [suggestedItems, setSuggestedItems] = useState<ProductOfCampaign[]>([]);
+  const [itemStatusFilter, setItemStatusFilter] =
+    useState<ItemStatusType>('All');
 
   const statusCounts = campaigns.reduce<Record<string, number>>(
     (acc, campaign) => {
@@ -218,7 +239,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
               : 'bg-gray-100 dark:bg-boxdark'
           }`}
         >
-          Tất cả ({campaigns.length})
+          {STATUS_TRANSLATIONS['All']} ({campaigns.length})
         </button>
         {['Planned', 'Ongoing', 'Completed', 'Canceled'].map((status) => (
           <button
@@ -230,7 +251,8 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                 : 'bg-gray-100 dark:bg-boxdark'
             }`}
           >
-            {status} ({statusCounts[status] || 0})
+            {STATUS_TRANSLATIONS[status as StatusType]} (
+            {statusCounts[status] || 0})
           </button>
         ))}
       </div>
@@ -285,7 +307,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                       }[campaign.status] || 'bg-gray-100 text-gray-500'
                     }`}
                   >
-                    {campaign.status}
+                    {STATUS_TRANSLATIONS[campaign.status as StatusType]}
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
@@ -403,7 +425,11 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
 
             <div className="h-full overflow-y-auto">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold">Vật phẩm chiến dịch</h2>
+                <h2 className="text-xl font-bold">
+                  {viewMode === 'campaign-items'
+                    ? 'Vật phẩm quyên góp'
+                    : `Vật phẩm được đề xuất`}
+                </h2>
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleViewModeChange('campaign-items')}
@@ -414,7 +440,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                         : 'bg-gray-100 dark:bg-boxdark'
                     }`}
                   >
-                    Vật phẩm chiến dịch
+                    Vật phẩm quyên góp
                   </button>
                   <button
                     onClick={() => handleViewModeChange('suggested-items')}
@@ -425,10 +451,39 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                         : 'bg-gray-100 dark:bg-boxdark'
                     }`}
                   >
-                    {isLoading ? 'Đang tải...' : 'Vật phẩm đề xuất'}
+                    {isLoading ? 'Đang tải...' : 'Vật phẩm được đề xuất'}
                   </button>
                 </div>
               </div>
+
+              {viewMode === 'suggested-items' &&
+                selectedCampaign?.categories && (
+                  <div className="mt-3 mb-3 rounded-lg bg-gray-50/50 p-3 dark:bg-boxdark">
+                    <p className="flex items-center text-sm text-gray-600">
+                      <svg
+                        className="mr-2 h-5 w-5 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span className="font-medium">
+                        Chiến dịch phù hợp với các sản phẩm trong danh mục:
+                      </span>
+                      <span className="ml-1 font-semibold text-primary">
+                        {selectedCampaign.categories
+                          .map((cat) => cat.name)
+                          .join(', ')}
+                      </span>
+                    </p>
+                  </div>
+                )}
 
               {isLoading && (
                 <div className="flex justify-center items-center py-4">
@@ -440,33 +495,35 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                 viewMode === 'suggested-items' &&
                 suggestedItems.length === 0 && (
                   <div className="text-center py-4 text-gray-500">
-                    Không tìm thấy vật phẩm đề xuất
+                    Không tìm thấy vật phẩm được đề xuất
                   </div>
                 )}
 
               {viewMode === 'campaign-items' ? (
                 <div className="mb-4 flex gap-3">
                   <button
-                    onClick={() => setStatusFilter('All')}
+                    onClick={() => setItemStatusFilter('All')}
                     className={`rounded-md px-4 py-2 text-sm ${
-                      statusFilter === 'All'
+                      itemStatusFilter === 'All'
                         ? 'bg-primary text-white'
                         : 'bg-gray-100 dark:bg-boxdark'
                     }`}
                   >
-                    Tất cả ({campaignItems.length})
+                    {ITEM_STATUS_TRANSLATIONS['All']} ({campaignItems.length})
                   </button>
-                  {['Pending', 'Approved'].map((status) => (
+                  {['Pending', 'Approved', 'Rejected'].map((status) => (
                     <button
                       key={status}
-                      onClick={() => setStatusFilter(status)}
+                      onClick={() =>
+                        setItemStatusFilter(status as ItemStatusType)
+                      }
                       className={`rounded-md px-4 py-2 text-sm ${
-                        statusFilter === status
+                        itemStatusFilter === status
                           ? 'bg-primary text-white'
                           : 'bg-gray-100 dark:bg-boxdark'
                       }`}
                     >
-                      {status} (
+                      {ITEM_STATUS_TRANSLATIONS[status as ItemStatusType]} (
                       {
                         campaignItems.filter(
                           (item) => item.itemCampaign.status === status,
@@ -506,8 +563,8 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                     {(viewMode === 'campaign-items'
                       ? campaignItems.filter(
                           (item) =>
-                            statusFilter === 'All' ||
-                            item.itemCampaign.status === statusFilter,
+                            itemStatusFilter === 'All' ||
+                            item.itemCampaign.status === itemStatusFilter,
                         )
                       : suggestedItems
                     ).map((item) => (
@@ -533,7 +590,7 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                         </td>
                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                           <p className="text-black dark:text-white">
-                            {item.category.name}
+                            {item.category.parentName}
                           </p>
                         </td>
                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
@@ -542,10 +599,16 @@ const CampaignTable: React.FC<CampaignTableProps> = ({
                               className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${
                                 item.itemCampaign.status === 'Approved'
                                   ? 'bg-success/10 text-success'
-                                  : 'bg-warning/10 text-warning'
+                                  : item.itemCampaign.status === 'Pending'
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-danger/10 text-danger'
                               }`}
                             >
-                              {item.itemCampaign.status}
+                              {
+                                ITEM_STATUS_TRANSLATIONS[
+                                  item.itemCampaign.status as ItemStatusType
+                                ]
+                              }
                             </span>
                           )}
                         </td>

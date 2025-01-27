@@ -19,6 +19,26 @@ interface ItemDetailModalProps {
   campaignId?: string;
 }
 
+const translateCondition = (condition: string): string => {
+  const conditionMap: Record<string, string> = {
+    Used: 'Đã sử dụng',
+    New: 'Mới',
+  };
+  return conditionMap[condition] || condition;
+};
+
+const translateStatus = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    Pending: 'Đang chờ',
+    Approved: 'Đã phê duyệt',
+  };
+  return statusMap[status] || status;
+};
+
+const translateGift = (isGift: boolean): string => {
+  return isGift ? 'Có' : 'Không';
+};
+
 const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   isOpen,
   onClose,
@@ -71,7 +91,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
         itemId: item.id,
         volunteerId: selectedVolunteer,
         appointmentDate: appointmentDate.replace('Z', ''),
-        campaignId: item.itemCampaign.campaignId,
+        campaignId: campaignId,
       });
       setIsApproveDialogOpen(false);
       onClose();
@@ -90,7 +110,10 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const confirmReject = async () => {
     setLoading(true);
     try {
-      await rejectItem(item.id);
+      await rejectItem({
+        itemId: item.id,
+        campaignId: item.itemCampaign.campaignId,
+      });
       setIsRejectDialogOpen(false);
       onClose();
       onRefresh?.();
@@ -102,6 +125,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   };
 
   const handleConfirmAddItemCampaign = async () => {
+    fetchVolunteers();
     setIsConfirmDialogOpen(true);
   };
 
@@ -114,15 +138,13 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
       setIsSubmitting(true);
       await addItemToCampaign(item.id, campaignId);
       setIsConfirmDialogOpen(false);
-      onClose();
-      onRefresh?.();
+      setIsApproveDialogOpen(true);
     } catch (error) {
       toast.error('Có lỗi xảy ra khi thêm sản phẩm!');
     } finally {
       setIsSubmitting(false);
     }
   };
-
   if (!isOpen || !item) return null;
 
   return (
@@ -173,7 +195,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                   {/* Status */}
                   <div>
                     <span className="inline-flex rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success">
-                      {item.status}
+                      {translateStatus(item.status)}
                     </span>
                   </div>
 
@@ -182,23 +204,25 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                     <div className="flex items-center gap-2">
                       <Package className="h-5 w-5 text-gray-500" />
                       <span className="text-sm">
-                        Condition:{' '}
-                        <span className="font-medium">{item.condition}</span>
+                        Tình trạng:{' '}
+                        <span className="font-medium">
+                          {translateCondition(item.condition)}
+                        </span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Gift className="h-5 w-5 text-gray-500" />
                       <span className="text-sm">
-                        Gift:{' '}
+                        Quà tặng:{' '}
                         <span className="font-medium">
-                          {item.isGift ? 'Yes' : 'No'}
+                          {translateGift(item.isGift)}
                         </span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Tag className="h-5 w-5 text-gray-500" />
                       <span className="text-sm">
-                        Category:{' '}
+                        Danh mục:{' '}
                         <span className="font-medium">
                           {item.category.name}
                         </span>
@@ -217,20 +241,24 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                     />
                     <div>
                       <p className="text-sm font-medium">{item.owner_Name}</p>
-                      <p className="text-xs text-gray-500">Owner</p>
+                      <p className="text-xs text-gray-500">Chủ sở hữu</p>
                     </div>
                   </div>
 
                   {/* Location */}
                   <div className="flex items-start gap-2">
                     <MapPin className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm">{item.address.address}</span>
+                    <span className="text-sm">
+                      Địa chỉ: {item.address.address}
+                    </span>
                   </div>
 
                   {/* Available Time */}
                   <div className="flex items-start gap-2">
                     <Clock className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm">{item.availableTime}</span>
+                    <span className="text-sm">
+                      Thời gian rảnh: {item.availableTime}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -238,7 +266,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               {/* Description */}
               <div className="px-2">
                 <h3 className="text-base font-bold text-black dark:text-gray-400">
-                  Description
+                  Mô tả chi tiết
                 </h3>
                 <p className="mt-2 text-sm text-gray-900 dark:text-white">
                   {item.description}
@@ -246,26 +274,30 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               </div>
 
               {/* Campaign Info if exists */}
-              {item.campaign && (
+              {item.itemCampaign && (
                 <div className="px-2">
                   <h3 className="mb-3 text-base font-bold text-black dark:text-gray-400">
-                    Campaign
+                    Chiến dịch liên quan
                   </h3>
                   <div className="rounded-lg border p-4">
                     <div className="flex items-center gap-4">
                       <img
-                        src={item.campaign.bannerPicture}
-                        alt={item.campaign.name}
+                        src={item.itemCampaign.bannerPicture}
+                        alt={item.itemCampaign.name}
                         className="h-16 w-16 rounded-lg object-cover"
                       />
                       <div>
-                        <h4 className="font-medium">{item.campaign.name}</h4>
+                        <h4 className="font-medium">
+                          {item.itemCampaign.name}
+                        </h4>
                         <p className="text-sm text-gray-500">
                           {new Date(
-                            item.campaign.startDate,
+                            item.itemCampaign.startDate,
                           ).toLocaleDateString()}{' '}
                           -
-                          {new Date(item.campaign.endDate).toLocaleDateString()}
+                          {new Date(
+                            item.itemCampaign.endDate,
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -274,39 +306,38 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               )}
             </div>
 
-            {!item.isApprovedCampaign && (
-              <div className="sticky bottom-0 mt-6 flex justify-end gap-4 border-t bg-white p-4 dark:bg-boxdark">
-                {viewMode === 'campaign-items' ? (
-                  <>
-                    <Button
-                      variant="destructive"
-                      onClick={handleReject}
-                      disabled={loading}
-                    >
-                      <X className="mr-2 h-4 w-4" />
-                      Reject
-                    </Button>
-                    <Button
-                      variant="default"
-                      onClick={handleApproveClick}
-                      disabled={loading}
-                    >
-                      <Check className="mr-2 h-4 w-4" />
-                      Approve
-                    </Button>
-                  </>
-                ) : (
+            <div className="sticky bottom-0 mt-6 flex justify-end gap-4 border-t bg-white p-4 dark:bg-boxdark">
+              {viewMode === 'campaign-items' &&
+              item.itemCampaign.status === 'Pending' ? (
+                <>
+                  <Button
+                    variant="destructive"
+                    onClick={handleReject}
+                    disabled={loading}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Từ chối
+                  </Button>
                   <Button
                     variant="default"
-                    onClick={handleConfirmAddItemCampaign}
+                    onClick={handleApproveClick}
                     disabled={loading}
                   >
                     <Check className="mr-2 h-4 w-4" />
-                    Thêm vào chiến dịch
+                    Phê duyệt
                   </Button>
-                )}
-              </div>
-            )}
+                </>
+              ) : viewMode === 'suggested-items' && !item.itemCampaign ? (
+                <Button
+                  variant="default"
+                  onClick={handleConfirmAddItemCampaign}
+                  disabled={loading}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Thêm vào chiến dịch
+                </Button>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -316,7 +347,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
         <div className="fixed inset-0 z-[999999] flex items-center justify-center overflow-hidden bg-black/50">
           <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-boxdark">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Assign Volunteer</h2>
+              <h2 className="text-xl font-bold">Chọn tình nguyện viên</h2>
               <button
                 onClick={() => setIsApproveDialogOpen(false)}
                 className="rounded-full p-1 hover:bg-gray-100"
@@ -328,7 +359,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Appointment Date
+                  Ngày hẹn
                 </label>
                 <input
                   type="datetime-local"
@@ -341,7 +372,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Select Volunteer
+                  Chọn tình nguyện viên
                 </label>
                 <select
                   className={`w-full rounded-lg border border-stroke bg-transparent px-4 py-2 outline-none focus:border-primary dark:border-strokedark ${
@@ -351,7 +382,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                   onChange={(e) => setSelectedVolunteer(e.target.value)}
                   disabled={!appointmentDate}
                 >
-                  <option value="">Select a volunteer</option>
+                  <option value="">Chọn tình nguyện viên</option>
                   {volunteers.map((volunteer) => (
                     <option key={volunteer.userId} value={volunteer.userId}>
                       {volunteer.username} - {volunteer.address[0]?.address}
@@ -359,8 +390,8 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                   ))}
                 </select>
                 {!appointmentDate && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Please select an appointment date first
+                  <p className="mt-1 text-xs text-red-500">
+                    Vui lòng chọn ngày hẹn trước!
                   </p>
                 )}
               </div>
@@ -370,14 +401,14 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                   variant="outline"
                   onClick={() => setIsApproveDialogOpen(false)}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <Button
                   variant="default"
                   onClick={handleApproveConfirm}
                   disabled={loading || !selectedVolunteer || !appointmentDate}
                 >
-                  Confirm
+                  Chấp nhận
                 </Button>
               </div>
             </div>
@@ -389,20 +420,22 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
       {isRejectDialogOpen && (
         <div className="fixed inset-0 z-[999999] flex items-center justify-center overflow-hidden bg-black/50">
           <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-boxdark">
-            <h3 className="mb-4 text-xl font-medium">Confirm Rejection</h3>
-            <p className="mb-6">Are you sure you want to reject this item?</p>
+            <h3 className="mb-4 text-xl font-medium">
+              Xác nhận từ chối sản phẩm này
+            </h3>
+            <p className="mb-6">Bạn có chắc chắn từ chối sản phẩm này?</p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setIsRejectDialogOpen(false)}
                 className="rounded-lg border border-gray-200 px-4 py-2 hover:bg-gray-100"
               >
-                Cancel
+                Hủy
               </button>
               <button
                 onClick={confirmReject}
                 className="rounded-lg bg-danger px-4 py-2 text-white hover:bg-danger/90"
               >
-                Reject
+                Từ chối
               </button>
             </div>
           </div>

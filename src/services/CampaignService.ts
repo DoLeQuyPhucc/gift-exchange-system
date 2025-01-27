@@ -289,7 +289,7 @@ export const approveItem = async (data: {
   itemId: string;
   volunteerId: string;
   appointmentDate: string;
-  campaignId: string;
+  campaignId: any;
 }) => {
   try {
     const response = await axiosInstance.put('campaign/item/approve', data);
@@ -305,11 +305,12 @@ export const approveItem = async (data: {
   }
 };
 
-export const rejectItem = async (itemId: string) => {
+export const rejectItem = async (data: {
+  itemId: string;
+  campaignId: string;
+}) => {
   try {
-    const response = await axiosInstance.post(
-      `campaign/item/reject?itemId=${itemId}`,
-    );
+    const response = await axiosInstance.put('campaign/item/reject', data);
 
     if (response.data.isSuccess) {
       toast.success('Từ chối thành công!');

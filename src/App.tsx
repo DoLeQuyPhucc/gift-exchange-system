@@ -137,24 +137,7 @@ function App() {
               </>
             }
           />
-          <Route
-            path="/campaigns"
-            element={
-              <>
-                <PageTitle title="Campaign | Staff Dashboard" />
-                <Campaign />
-              </>
-            }
-          />
-          <Route
-            path="/create-campaign"
-            element={
-              <>
-                <PageTitle title="Campaign | Staff Dashboard" />
-                <CreateCampaign />
-              </>
-            }
-          />
+
           <Route
             path="/"
             element={
@@ -174,6 +157,28 @@ function App() {
               <>
                 <PageTitle title="Calendar | Staff Dashboard" />
                 <Calendar />
+              </>
+            }
+          />
+        </Route>
+
+        {/* Admin and Staff Routes */}
+        <Route element={<RoleBasedRoute allowedRoles={['Staff', 'Admin']} />}>
+          <Route
+            path="/campaigns"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <Campaign />
+              </>
+            }
+          />
+          <Route
+            path="/create-campaign"
+            element={
+              <>
+                <PageTitle title="Campaign | Staff Dashboard" />
+                <CreateCampaign />
               </>
             }
           />
